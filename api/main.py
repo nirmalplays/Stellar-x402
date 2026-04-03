@@ -54,6 +54,39 @@ async def get_agent_discovery():
             return json.load(f)
     return {"error": "Metadata not found"}
 
+@app.post("/api/pay")
+async def process_payment():
+    """Demo-only: Automatically send 0.05 XLM from Deployer to Executor to simulate x402 flow."""
+    try:
+        deployer_pk = os.getenv("DEPLOYER_PUBLIC_KEY")
+        deployer_secret = os.getenv("DEPLOYER_SECRET")
+        executor_pk = os.getenv("EXECUTOR_PUBLIC_KEY")
+        
+        horizon_url = os.getenv("HORIZON_URL", "https://horizon-testnet.stellar.org")
+        server = Server(horizon_url)
+        
+        # Load account
+        source_account = await asyncio.to_thread(server.load_account, deployer_pk)
+        
+        # Build transaction
+        from stellar_sdk import TransactionBuilder, Network, Asset, Keypair
+        tx = (
+            TransactionBuilder(source_account, Network.TESTNET_NETWORK_PASSPHRASE)
+            .append_payment_op(executor_pk, Asset.native(), "0.05")
+            .set_timeout(30)
+            .build()
+        )
+        
+        # Sign and submit
+        kp = Keypair.from_secret(deployer_secret)
+        tx.sign(kp)
+        response = await asyncio.to_thread(server.submit_transaction, tx)
+        
+        return {"hash": response["hash"], "status": "success"}
+    except Exception as e:
+        print(f"Payment error: {e}")
+        return {"error": str(e)}
+
 @app.get("/api/vault")
 async def get_vault_data():
     horizon_url = os.getenv("HORIZON_URL", "https://horizon-testnet.stellar.org")

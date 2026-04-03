@@ -437,12 +437,19 @@
                 });
 
                 if (response.status === 402) {
-                    appendLog('> Received 402 Payment Required. Fetching payment authorization...');
-                    const vaultRes = await fetch('/api/vault');
-                    const vaultData = await vaultRes.json();
-                    if (vaultData.transactions && vaultData.transactions.length > 0) {
-                        const txHash = vaultData.transactions[0].hash_full;
-                        appendLog(`> x402 Authorization found: ${txHash.slice(0, 8)}...`);
+                    appendLog('> Received 402 Payment Required. Initiating real-time x402 payment...');
+                    
+                    // Call our new payment endpoint to perform a real on-chain transaction
+                    const payRes = await fetch('/api/pay', { method: 'POST' });
+                    const payData = await payRes.json();
+                    
+                    if (payData.hash) {
+                        const txHash = payData.hash;
+                        appendLog(`> x402 Payment successful! TX: ${txHash.slice(0, 8)}...`);
+                        
+                        // Wait a bit for Horizon to index the transaction
+                        await new Promise(r => setTimeout(r, 2000));
+                        
                         response = await fetch('/execute/stream', {
                             method: 'POST',
                             headers: { 
@@ -458,7 +465,7 @@
                             })
                         });
                     } else {
-                        appendLog('[FATAL] No payment history found in vault.');
+                        appendLog(`[FATAL] Payment failed: ${payData.error || 'Unknown error'}`);
                         return;
                     }
                 }

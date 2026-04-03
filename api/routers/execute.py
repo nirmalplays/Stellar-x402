@@ -36,16 +36,28 @@ def _resolve_job_status(output_lines: list[str], verified: bool) -> JobStatus:
     return JobStatus.COMPLETED
 
 async def _verify_payment(tx_hash: str) -> bool:
-    """Verifies that the payment transaction was successful on the Stellar Testnet."""
+    """Verifies that the payment transaction was successful on the Stellar Testnet and sent to the executor."""
     if not tx_hash:
         return False
     try:
         horizon_url = os.getenv("HORIZON_URL", "https://horizon-testnet.stellar.org")
+        executor_pk = os.getenv("EXECUTOR_PUBLIC_KEY")
         server = Server(horizon_url)
+        
         # Check if transaction exists and is successful
         tx = await asyncio.to_thread(server.transactions().transaction(tx_hash).call)
-        return tx.get("successful", False)
-    except Exception:
+        if not tx.get("successful", False):
+            return False
+
+        # Verify it contains a payment of 0.05 XLM to our executor
+        ops = await asyncio.to_thread(server.operations().for_transaction(tx_hash).call)
+        for op in ops["_embedded"]["records"]:
+            if op["type"] == "payment" and op["to"] == executor_pk:
+                if float(op["amount"]) >= 0.05:
+                    return True
+        return False
+    except Exception as e:
+        print(f"Payment verification error: {e}")
         return False
 
 @router.post("/deactivate")
