@@ -68,10 +68,10 @@ class RegistryClient:
         tx = self.soroban_server.prepare_transaction(tx)
         return self._submit_tx(tx, secret_key)
 
-    def get_agent(self, agent_id: str):
+    def _get_agent_result_xdr(self, agent_id: str):
         if not self.contract_id:
-            return None # Fallback or simulation mode
-            
+            return None
+
         secret = os.getenv("DEPLOYER_SECRET")
         if not secret or not secret.strip():
             return None
@@ -96,14 +96,29 @@ class RegistryClient:
             return None
 
         from stellar_sdk import xdr
+
         result_xdr = simulate_response.results[0].xdr
         sc_val = xdr.SCVal.from_xdr(result_xdr)
-        
-        # If it's Void, the agent doesn't exist (Option::None)
+
         if sc_val.type == xdr.SCValType.SCV_VOID:
             return None
 
         return result_xdr
+
+    def get_agent(self, agent_id: str):
+        """Raw SCVal XDR bytes for `get_agent` (for legacy callers)."""
+        return self._get_agent_result_xdr(agent_id)
+
+    def get_agent_record(self, agent_id: str) -> dict | None:
+        """Parsed on-chain Agent struct, or None if missing / misconfigured."""
+        raw = self._get_agent_result_xdr(agent_id)
+        if not raw:
+            return None
+        from stellar_sdk import xdr
+        from api.services.soroban_agent_parse import sc_agent_map_to_dict
+
+        sc_val = xdr.SCVal.from_xdr(raw)
+        return sc_agent_map_to_dict(sc_val)
 
     def update_reputation(self, agent_id: str, delta: int):
         if not self.contract_id:

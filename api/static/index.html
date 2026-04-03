@@ -436,6 +436,14 @@
                             <button id="run-btn" class="btn-launch w-full py-3.5 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2">
                                 <i class="fas fa-play"></i> Launch process
                             </button>
+                            <details class="mt-4 text-xs border border-slate-700/80 rounded-xl p-3 bg-slate-950/40">
+                                <summary class="cursor-pointer text-cyan-400/90 font-bold uppercase tracking-wider">Pay with your wallet (x402)</summary>
+                                <p class="text-slate-500 mt-2 mb-2">Get an unsigned Stellar payment (0.05 XLM → executor). Sign & submit in Freighter or CLI, then launch with the tx hash in the stream header (or use Launch — demo pay still works).</p>
+                                <label class="text-[10px] text-slate-500 uppercase font-bold block mb-1">Source G-address</label>
+                                <input id="x402-source" type="text" placeholder="G..." class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono mb-2">
+                                <button type="button" id="x402-prepare-btn" class="w-full py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-bold uppercase">Get unsigned transaction XDR</button>
+                                <textarea id="x402-xdr-out" readonly rows="4" class="w-full mt-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-[10px] font-mono text-slate-400 hidden"></textarea>
+                            </details>
                         </div>
                     </div>
                     <div class="glass-panel p-6 panel-float">
@@ -944,6 +952,32 @@
                 await syncActivityFeed();
             } catch (e) {}
         }
+
+        document.getElementById('x402-prepare-btn').onclick = async () => {
+            const src = document.getElementById('x402-source').value.trim();
+            const out = document.getElementById('x402-xdr-out');
+            if (!src) {
+                alert('Enter your Stellar public key (G…)');
+                return;
+            }
+            try {
+                const r = await fetch('/api/x402/prepare-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ source_public_key: src })
+                });
+                const j = await r.json();
+                out.classList.remove('hidden');
+                if (!r.ok) {
+                    out.value = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail || j, null, 2);
+                    return;
+                }
+                out.value = (j.transaction_xdr || '') + '\n\n' + (Array.isArray(j.next_steps) ? j.next_steps.join('\n') : '');
+            } catch (e) {
+                out.classList.remove('hidden');
+                out.value = String(e);
+            }
+        };
 
         loadTerminal();
         const last = localStorage.getItem('last_result');

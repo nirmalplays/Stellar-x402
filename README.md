@@ -129,6 +129,30 @@ pub struct Agent {
 4. **Explore Agent Vault**:
    Open `http://127.0.0.1:8000` and choose **Agent Vault** in the sidebar for the pipeline view and on-chain ledger.
 
+### Discovery & production URL
+
+- **`GET /api/discovery`** — Loads `agent_metadata.json` and, if set, rewrites `endpoint` / adds URLs using **`PUBLIC_BASE_URL`** (no trailing slash). Also includes an **`x402`** block (amount, destination, `prepare_unsigned_transaction` URL).
+- **`GET /api/discovery/resolved?agent_id=agent_402`** — Adds the parsed **on-chain** registry row (`owner`, `metadata_cid`, `reputation`, `active`) and fetches JSON from **IPFS** when a CID is present (`IPFS_GATEWAY` defaults to `https://ipfs.io`).
+
+### External x402 payer (any wallet)
+
+The dashboard can still use **`POST /api/pay`** (deployer-funded demo). For a **real** payer:
+
+1. **`POST /api/x402/prepare-payment`** with body `{"source_public_key": "G..."}` (account that will sign).
+2. Sign **`transaction_xdr`** and submit to Horizon (e.g. Freighter, Albedo, or `stellar-cli`).
+3. Call **`POST /execute/stream`** with header **`X-Stellar-Payment-Tx`** set to the submitted transaction hash.
+
+Verification only requires a successful native payment **≥ 0.05 XLM** to **`EXECUTOR_PUBLIC_KEY`** (payer can be any account).
+
+### Pin `agent_metadata.json` to IPFS (optional)
+
+1. Create a JWT at [Pinata](https://app.pinata.cloud/) and set **`PINATA_JWT`** in `.env`.
+2. Run:
+   ```powershell
+   python scripts/publish_agent_metadata_ipfs.py
+   ```
+3. Use the printed **CID** as `metadata_cid` when registering the agent on the Soroban registry.
+
 ---
 
 ## 7. New: Advanced Visualization Features
@@ -153,8 +177,11 @@ The v4 update introduces a sophisticated observability layer for agent operation
 |--------|------|
 | `api/static/` | **Advanced Dashboard** & **Agent Vault** (New UI) |
 | `api/main.py` | FastAPI server with real-time state synchronization |
+| `api/routers/x402_prep.py` | **POST /api/x402/prepare-payment** (unsigned XDR for any payer) |
+| `api/services/discovery_builder.py` | **GET /api/discovery** + IPFS helpers for **/api/discovery/resolved** |
+| `api/services/soroban_agent_parse.py` | Parse on-chain `Agent` struct from Soroban simulation |
 | `contracts/registry/` | Soroban smart contract for agent registration |
-| `scripts/` | Helper scripts for account setup and balance checks |
+| `scripts/` | Setup, balances, **publish_agent_metadata_ipfs.py** (Pinata) |
 | `tests/` | Comprehensive test suite for Docker security and API |
 
 ---

@@ -17,8 +17,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from api.routers import execute
+from api.routers import execute, x402_prep
 from api.services.registry_client import registry_client
+from api.services.discovery_builder import build_discovery_payload, fetch_json_from_ipfs
 from api.services.activity_log import push_event, get_events, clear_events
 import json
 import asyncio
@@ -42,6 +43,7 @@ app = FastAPI(title="Stellarpay Executor API", lifespan=lifespan)
 
 # Main Execution Router
 app.include_router(execute.router)
+app.include_router(x402_prep.router)
 
 # Mount static files for the dashboard
 static_dir = os.path.join(os.path.dirname(__file__), "static")
@@ -50,11 +52,28 @@ if os.path.exists(static_dir):
 
 @app.get("/api/discovery")
 async def get_agent_discovery():
-    metadata_path = os.path.join(os.path.dirname(__file__), "..", "agent_metadata.json")
-    if os.path.exists(metadata_path):
-        with open(metadata_path, "r") as f:
-            return json.load(f)
-    return {"error": "Metadata not found"}
+    """Agent card from `agent_metadata.json` plus `PUBLIC_BASE_URL` and x402 hints."""
+    return build_discovery_payload()
+
+
+@app.get("/api/discovery/resolved")
+async def get_discovery_resolved(agent_id: str = "agent_402"):
+    """Merge local/env discovery with on-chain registry row and IPFS metadata (if CID resolvable)."""
+    local = build_discovery_payload()
+    out: dict = {
+        "local_file_and_env": local,
+        "on_chain_agent": None,
+        "ipfs_metadata": None,
+    }
+    try:
+        rec = await asyncio.to_thread(registry_client.get_agent_record, agent_id)
+        out["on_chain_agent"] = rec
+        cid = (rec or {}).get("metadata_cid")
+        if cid:
+            out["ipfs_metadata"] = await fetch_json_from_ipfs(str(cid))
+    except Exception as e:
+        out["registry_error"] = str(e)
+    return out
 
 @app.post("/api/pay")
 async def process_payment():
