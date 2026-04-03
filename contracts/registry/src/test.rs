@@ -1,11 +1,11 @@
 #![cfg(test)]
-use super::{Registry, RegistryClient, Agent};
+use super::{Registry, RegistryClient};
 use soroban_sdk::{testutils::Address as _, Address, Env, String};
 
 #[test]
 fn test_register_and_get_agent() {
     let env = Env::default();
-    let contract_id = env.register_contract(None, Registry);
+    let contract_id = env.register(Registry, ());
     let client = RegistryClient::new(&env, &contract_id);
 
     let owner = Address::generate(&env);
@@ -26,7 +26,7 @@ fn test_register_and_get_agent() {
 #[should_panic(expected = "Agent already exists")]
 fn test_duplicate_registration() {
     let env = Env::default();
-    let contract_id = env.register_contract(None, Registry);
+    let contract_id = env.register(Registry, ());
     let client = RegistryClient::new(&env, &contract_id);
 
     let owner = Address::generate(&env);
@@ -41,7 +41,7 @@ fn test_duplicate_registration() {
 #[test]
 fn test_deactivate_agent() {
     let env = Env::default();
-    let contract_id = env.register_contract(None, Registry);
+    let contract_id = env.register(Registry, ());
     let client = RegistryClient::new(&env, &contract_id);
 
     let owner = Address::generate(&env);
@@ -59,7 +59,7 @@ fn test_deactivate_agent() {
 #[test]
 fn test_update_reputation() {
     let env = Env::default();
-    let contract_id = env.register_contract(None, Registry);
+    let contract_id = env.register(Registry, ());
     let client = RegistryClient::new(&env, &contract_id);
 
     let owner = Address::generate(&env);

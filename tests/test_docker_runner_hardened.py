@@ -63,13 +63,18 @@ async def test_docker_runner_streaming_behavior():
 @pytest.mark.docker
 @pytest.mark.asyncio
 async def test_docker_runner_concurrency():
-    async def run_one(i):
-        lines = []
-        async for line in docker_runner.run("python:3.11-slim", f"python -c 'print({i})'"):
-            lines.append(line)
-        return lines
+    # Docker Desktop can drop parallel create/start bursts; cap concurrency.
+    sem = asyncio.Semaphore(2)
 
-    # Run 5 tasks concurrently
+    async def run_one(i):
+        async with sem:
+            lines = []
+            async for line in docker_runner.run(
+                "python:3.11-slim", f"python -c 'print({i})'"
+            ):
+                lines.append(line)
+            return lines
+
     results = await asyncio.gather(*[run_one(i) for i in range(5)])
     for i, res in enumerate(results):
         assert any(str(i) == line for line in res)

@@ -1,6 +1,5 @@
 import asyncio
 import queue
-import queue as queue_module
 import threading
 import time
 from typing import AsyncGenerator
@@ -14,20 +13,29 @@ _LOG_NO_CHUNK = object()
 
 class DockerRunner:
     def __init__(self):
-        try:
-            self.client = docker.from_env()
-        except Exception as e:
-            print(f"Failed to connect to Docker daemon: {e}")
-            self.client = None
+        # We don't store a persistent client because it's not thread-safe for many overlapping runs.
+        # We only check once if Docker is available to avoid spamming errors if it's down.
+        self._initial_check_done = False
+        self._docker_available = False
         self._lifecycle_lock = threading.Lock()
 
-    async def run(self, image: str, cmd: str, timeout: int = 30) -> AsyncGenerator[str, None]:
-        if not self.client:
-            yield "[ERROR] Docker daemon not available."
-            return
+    def _check_docker(self) -> bool:
+        try:
+            client = docker.from_env()
+            client.ping()
+            client.close()
+            return True
+        except Exception:
+            return False
 
-        # Fresh client per run avoids thread-safety issues when many runs overlap (asyncio.gather).
-        client = docker.from_env()
+    async def run(self, image: str, cmd: str, timeout: int = 30) -> AsyncGenerator[str, None]:
+        # Try to connect. We don't return early if the initial check failed, 
+        # because the daemon might have been started since then.
+        try:
+            client = docker.from_env()
+        except Exception as e:
+            yield f"[ERROR] Docker daemon not available: {e}"
+            return
 
         container = None
         timed_out = False
@@ -67,7 +75,7 @@ class DockerRunner:
             def dequeue() -> object:
                 try:
                     return log_q.get(timeout=0.5)
-                except queue_module.Empty:
+                except queue.Empty:
                     return _LOG_NO_CHUNK
 
             while True:

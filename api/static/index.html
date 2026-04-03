@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellarpay Executor | Advanced Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #05070a; color: #e2e8f0; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.5); }
+        .terminal-compact { background-color: #020617; font-family: 'Fira Code', monospace; font-size: 0.75rem; border: 1px solid #1e293b; border-radius: 4px; height: 180px; overflow-y: auto; padding: 10px; }
+        .tx-feed-item { border-left: 2px solid #3b82f6; transition: all 0.3s ease; }
+        .tx-feed-item:hover { background: rgba(59, 130, 246, 0.1); }
+        .glow-blue { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+        .nav-link { position: relative; transition: color 0.3s; }
+        .nav-link.active::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 glass border-r border-slate-800 flex flex-col p-6 space-y-8">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900">
+                    <i class="fas fa-bolt text-white"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight">StellarX-402</span>
+            </div>
+            
+            <nav class="flex-1 space-y-2">
+                <a href="/" class="nav-link active flex items-center space-x-3 text-blue-400 p-2 rounded-md bg-blue-900/20">
+                    <i class="fas fa-terminal"></i>
+                    <span>Executor Console</span>
+                </a>
+                <a href="/vault" class="nav-link flex items-center space-x-3 text-slate-400 hover:text-white p-2 rounded-md hover:bg-slate-800/50">
+                    <i class="fas fa-vault"></i>
+                    <span>Agent Vault</span>
+                </a>
+            </nav>
+
+            <div class="p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-xs">
+                <div class="text-slate-500 mb-2 uppercase tracking-widest font-semibold">Network</div>
+                <div class="flex items-center text-green-400">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                    Stellar Testnet
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-900/10 via-slate-950 to-slate-950">
+            <header class="p-6 border-b border-slate-800 flex justify-between items-center glass">
+                <h2 class="text-lg font-semibold">Executor Dashboard</h2>
+                <div id="wallets-header" class="flex space-x-6">
+                    <!-- Loaded via JS -->
+                </div>
+            </header>
+
+            <div class="flex-1 p-6 overflow-y-auto grid grid-cols-12 gap-6">
+                <!-- Configuration & Launch -->
+                <div class="col-span-12 lg:col-span-4 space-y-6">
+                    <div class="glass p-6 rounded-2xl glow-blue">
+                        <h3 class="text-sm font-semibold uppercase text-slate-400 mb-4 tracking-wider">Configure Job</h3>
+                        <div class="space-y-4">
+                            <div class="group">
+                                <label class="text-xs text-slate-500 mb-1 block group-focus-within:text-blue-400 transition-colors">DOCKER_IMAGE</label>
+                                <input id="image" type="text" value="python:3.11-slim" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all">
+                            </div>
+                            <div class="group">
+                                <label class="text-xs text-slate-500 mb-1 block group-focus-within:text-blue-400 transition-colors">COMMAND_ENTRYPOINT</label>
+                                <textarea id="cmd" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-sm font-mono focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all">python -c "print('Booting...'); import time; time.sleep(1); print('Task started...'); time.sleep(2); print('Success.')"</textarea>
+                            </div>
+                            <button id="run-btn" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg shadow-lg shadow-blue-900/20 transition-all active:scale-95 flex items-center justify-center group">
+                                <i class="fas fa-play mr-2 group-hover:translate-x-1 transition-transform"></i>
+                                LAUNCH PROCESS
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="glass p-6 rounded-2xl border-slate-800/50">
+                        <h3 class="text-sm font-semibold uppercase text-slate-400 mb-4 tracking-wider">Live TX Feed</h3>
+                        <div id="tx-feed" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                            <!-- Transactions added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Execution & Results -->
+                <div class="col-span-12 lg:col-span-8 flex flex-col space-y-6">
+                    <div class="glass p-6 rounded-2xl flex-1 flex flex-col border-slate-800/50">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center space-x-3">
+                                <h3 class="text-sm font-semibold uppercase text-slate-400 tracking-wider">System Output</h3>
+                                <span id="job-status" class="px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-400 font-bold uppercase tracking-tighter">Standby</span>
+                            </div>
+                            <button onclick="document.getElementById('terminal').innerHTML=''" class="text-slate-500 hover:text-slate-300 text-xs transition-colors">
+                                <i class="fas fa-eraser mr-1"></i> CLEAR
+                            </button>
+                        </div>
+                        <div id="terminal" class="terminal-compact flex-1">
+                            <span class="text-slate-600 italic opacity-50"># Waiting for instructions...</span>
+                        </div>
+                    </div>
+
+                    <div id="result-panel" class="hidden glass p-6 rounded-2xl border-blue-500/20 bg-blue-900/5">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="text-xs font-bold text-blue-400 uppercase mb-2">Execution Successful</h4>
+                                <p id="res-job-id" class="text-lg font-mono text-slate-200">JOB_ID: 8a2f-9b11-4c03</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[10px] text-slate-500 mb-1">COMPLETION_TIME</div>
+                                <div id="res-time" class="text-sm font-mono text-slate-400">...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const runBtn = document.getElementById('run-btn');
+        const terminal = document.getElementById('terminal');
+        const txFeed = document.getElementById('tx-feed');
+        const statusBadge = document.getElementById('job-status');
+
+        function appendTX(type, amount, hash) {
+            const div = document.createElement('div');
+            div.className = 'tx-feed-item glass p-3 rounded-lg text-xs flex justify-between items-center border-l-4 border-blue-500';
+            div.innerHTML = `
+                <div>
+                    <div class="text-slate-400 font-semibold">${type}</div>
+                    <div class="text-[10px] text-slate-600 font-mono">${hash}</div>
+                </div>
+                <div class="text-blue-400 font-bold">-${amount}</div>
+            `;
+            txFeed.prepend(div);
+        }
+
+        function appendLog(text) {
+            const line = document.createElement('div');
+            line.className = 'mb-1';
+            line.innerHTML = `<span class="text-blue-500 mr-2">></span>${text}`;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        async function updateWallets() {
+            try {
+                const res = await fetch('/api/vault');
+                const data = await res.json();
+                const header = document.getElementById('wallets-header');
+                header.innerHTML = data.wallets.map(w => `
+                    <div class="flex flex-col items-end">
+                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${w.name}</span>
+                        <span class="text-sm font-mono text-slate-200">${parseFloat(w.balance).toFixed(2)} <span class="text-blue-400">XLM</span></span>
+                    </div>
+                `).join('');
+            } catch (err) {}
+        }
+
+        runBtn.onclick = async () => {
+            const image = document.getElementById('image').value;
+            const cmd = document.getElementById('cmd').value;
+            
+            terminal.innerHTML = '<span class="text-blue-500"># System initializing...</span>';
+            runBtn.disabled = true;
+            statusBadge.textContent = 'Active';
+            statusBadge.className = 'px-2 py-0.5 rounded-full text-[10px] bg-blue-900 text-blue-400 font-bold uppercase tracking-tighter animate-pulse';
+
+            try {
+                const response = await fetch('/execute/stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        task: 'manual_trigger',
+                        input: {},
+                        agent_id: 'agent_402',
+                        image: image,
+                        cmd: cmd
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let firstLog = true;
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        const trimmedLine = line.trim();
+                        if (trimmedLine.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(trimmedLine.slice(6));
+                                if (data.line) {
+                                    if (data.line.includes('Authorizing')) {
+                                        appendTX('AUTH', '0.00001 XLM', 'auth_' + Math.random().toString(36).substring(7));
+                                    }
+                                    appendLog(data.line);
+                                } else if (data.job_id) {
+                                    document.getElementById('result-panel').classList.remove('hidden');
+                                    document.getElementById('res-job-id').textContent = `JOB_ID: ${data.job_id.slice(0, 18)}`;
+                                    document.getElementById('res-time').textContent = new Date(data.timestamp).toLocaleTimeString();
+                                    statusBadge.textContent = 'Completed';
+                                    statusBadge.className = 'px-2 py-0.5 rounded-full text-[10px] bg-green-900 text-green-400 font-bold uppercase tracking-tighter';
+                                }
+                            } catch (e) {
+                                console.error('Error parsing SSE data:', e, trimmedLine);
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                appendLog(`[FATAL] ${err.message}`);
+            } finally {
+                runBtn.disabled = false;
+                updateWallets();
+            }
+        };
+
+        updateWallets();
+        setInterval(updateWallets, 30000);
+    </script>
+</body>
+</html>
