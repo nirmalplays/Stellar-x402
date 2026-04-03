@@ -13,8 +13,26 @@
         .tx-feed-item { border-left: 2px solid #3b82f6; transition: all 0.3s ease; }
         .tx-feed-item:hover { background: rgba(59, 130, 246, 0.1); }
         .glow-blue { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
-        .nav-link { position: relative; transition: color 0.3s; }
+        .nav-link { position: relative; transition: color 0.3s; cursor: pointer; }
         .nav-link.active::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+        
+        /* Vault Styles */
+        .node-advanced { background: #1e293b; border: 1px solid #334155; border-radius: 12px; width: 200px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; z-index: 10; }
+        .node-advanced.active { border-color: #3b82f6; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); transform: translateY(-5px); }
+        .node-advanced.completed { border-color: #10b981; }
+        .flow-path { height: 2px; background: #1e293b; flex-grow: 1; position: relative; margin: 0 -5px; z-index: 5; overflow: hidden; }
+        .flow-path-active::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, #3b82f6, transparent); animation: flow-move 1.5s infinite linear; }
+        @keyframes flow-move { to { left: 100%; } }
+        .stat-box { background: rgba(30, 41, 59, 0.5); border: 1px solid #334155; padding: 1rem; border-radius: 12px; }
+        .tx-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 0.75rem; border-left: 3px solid #3b82f6; }
+        .indicator { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .indicator-idle { background: #475569; }
+        .indicator-active { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -29,21 +47,21 @@
             </div>
             
             <nav class="flex-1 space-y-2">
-                <a href="/" class="nav-link active flex items-center space-x-3 text-blue-400 p-2 rounded-md bg-blue-900/20">
+                <div onclick="switchView('console')" id="nav-console" class="nav-link active flex items-center space-x-3 text-blue-400 p-2 rounded-md bg-blue-900/20">
                     <i class="fas fa-terminal"></i>
                     <span>Executor Console</span>
-                </a>
-                <a href="/vault" class="nav-link flex items-center space-x-3 text-slate-400 hover:text-white p-2 rounded-md hover:bg-slate-800/50">
+                </div>
+                <div onclick="switchView('vault')" id="nav-vault" class="nav-link flex items-center space-x-3 text-slate-400 hover:text-white p-2 rounded-md hover:bg-slate-800/50">
                     <i class="fas fa-vault"></i>
                     <span>Agent Vault</span>
-                </a>
+                </div>
             </nav>
 
-            <div class="p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-xs">
-                <div class="text-slate-500 mb-2 uppercase tracking-widest font-semibold">Network</div>
-                <div class="flex items-center text-green-400">
-                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-                    Stellar Testnet
+            <div id="sidebar-status" class="p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-xs">
+                <div class="text-slate-500 mb-2 uppercase tracking-widest font-semibold">System State</div>
+                <div id="system-state-text" class="flex items-center text-slate-400 italic">
+                    <span class="indicator indicator-idle"></span>
+                    Waiting for instructions...
                 </div>
             </div>
         </aside>
@@ -51,13 +69,14 @@
         <!-- Main Content -->
         <main class="flex-1 flex flex-col overflow-hidden bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-900/10 via-slate-950 to-slate-950">
             <header class="p-6 border-b border-slate-800 flex justify-between items-center glass">
-                <h2 class="text-lg font-semibold">Executor Dashboard</h2>
+                <h2 id="view-title" class="text-lg font-semibold">Executor Dashboard</h2>
                 <div id="wallets-header" class="flex space-x-6">
                     <!-- Loaded via JS -->
                 </div>
             </header>
 
-            <div class="flex-1 p-6 overflow-y-auto grid grid-cols-12 gap-6">
+            <!-- Console View -->
+            <div id="view-console" class="flex-1 p-6 overflow-y-auto grid grid-cols-12 gap-6">
                 <!-- Configuration & Launch -->
                 <div class="col-span-12 lg:col-span-4 space-y-6">
                     <div class="glass p-6 rounded-2xl glow-blue">
@@ -94,7 +113,7 @@
                                 <h3 class="text-sm font-semibold uppercase text-slate-400 tracking-wider">System Output</h3>
                                 <span id="job-status" class="px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-400 font-bold uppercase tracking-tighter">Standby</span>
                             </div>
-                            <button onclick="document.getElementById('terminal').innerHTML=''" class="text-slate-500 hover:text-slate-300 text-xs transition-colors">
+                            <button onclick="clearConsole()" class="text-slate-500 hover:text-slate-300 text-xs transition-colors">
                                 <i class="fas fa-eraser mr-1"></i> CLEAR
                             </button>
                         </div>
@@ -106,13 +125,94 @@
                     <div id="result-panel" class="hidden glass p-6 rounded-2xl border-blue-500/20 bg-blue-900/5">
                         <div class="flex justify-between items-start">
                             <div>
-                                <h4 class="text-xs font-bold text-blue-400 uppercase mb-2">Execution Successful</h4>
+                                <h4 id="result-title" class="text-xs font-bold text-blue-400 uppercase mb-2">Execution Result</h4>
                                 <p id="res-job-id" class="text-lg font-mono text-slate-200">JOB_ID: 8a2f-9b11-4c03</p>
                             </div>
                             <div class="text-right">
                                 <div class="text-[10px] text-slate-500 mb-1">COMPLETION_TIME</div>
                                 <div id="res-time" class="text-sm font-mono text-slate-400">...</div>
                             </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs">
+                            <div class="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+                                <div class="text-slate-500 uppercase tracking-widest mb-2">Verification</div>
+                                <div id="res-verified" class="text-base font-semibold text-green-400">Verified</div>
+                                <div id="res-validation-reason" class="text-slate-400 mt-2 leading-relaxed"></div>
+                            </div>
+                            <div class="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+                                <div class="text-slate-500 uppercase tracking-widest mb-2">Signature</div>
+                                <div class="text-slate-400">Strategy: <span id="res-validation-strategy" class="text-slate-200"></span></div>
+                                <div class="text-slate-400 mt-2">Public Key</div>
+                                <div id="res-pubkey" class="font-mono text-[10px] text-blue-300 break-all"></div>
+                                <div class="text-slate-400 mt-2">Signature</div>
+                                <div id="res-signature" class="font-mono text-[10px] text-emerald-300 break-all"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vault View -->
+            <div id="view-vault" class="hidden flex-1 p-8 overflow-y-auto space-y-12">
+                <!-- Flow Visualization -->
+                <section class="space-y-6">
+                    <div class="flex justify-between items-end">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Process Lifecycle</h3>
+                        <div id="current-step-label" class="text-xs text-blue-400 font-mono">STEP 0/4: READY</div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between py-12 px-4">
+                        <div id="node-1" class="node-advanced p-6 text-center">
+                            <i class="fas fa-wallet text-2xl text-blue-500 mb-3"></i>
+                            <div class="text-sm font-bold">Stellar Wallet</div>
+                            <div class="text-[10px] text-slate-500 mt-1">Authorization & Fees</div>
+                        </div>
+                        <div id="path-1" class="flow-path"></div>
+                        
+                        <div id="node-2" class="node-advanced p-6 text-center">
+                            <i class="fas fa-id-card text-2xl text-green-500 mb-3"></i>
+                            <div class="text-sm font-bold">Agent Registry</div>
+                            <div class="text-[10px] text-slate-500 mt-1">Contract Verification</div>
+                        </div>
+                        <div id="path-2" class="flow-path"></div>
+                        
+                        <div id="node-3" class="node-advanced p-6 text-center">
+                            <i class="fas fa-microchip text-2xl text-purple-500 mb-3"></i>
+                            <div class="text-sm font-bold">Execution Engine</div>
+                            <div class="text-[10px] text-slate-500 mt-1">Sandboxed Docker Run</div>
+                        </div>
+                        <div id="path-3" class="flow-path"></div>
+                        
+                        <div id="node-4" class="node-advanced p-6 text-center">
+                            <i class="fas fa-shield-alt text-2xl text-amber-500 mb-3"></i>
+                            <div class="text-sm font-bold">Result Finality</div>
+                            <div class="text-[10px] text-slate-500 mt-1">Signed & Recorded</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Stats and History -->
+                <div class="grid grid-cols-12 gap-8 pt-8 border-t border-slate-800">
+                    <div class="col-span-12 lg:col-span-4 space-y-6">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Agent Stats</h3>
+                        <div class="stat-box">
+                            <div class="text-[10px] text-slate-500 uppercase mb-1">On-Chain Reputation</div>
+                            <div id="stat-reputation" class="text-xl font-bold text-blue-400">...</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="text-[10px] text-slate-500 uppercase mb-1">Agent Status</div>
+                            <div id="stat-status" class="text-xl font-bold">...</div>
+                        </div>
+                        <div class="stat-box col-span-2">
+                            <div class="text-[10px] text-slate-500 uppercase mb-2">Registry Contract ID</div>
+                            <div id="contract-id-display" class="text-[10px] font-mono text-blue-400 break-all bg-slate-950 p-3 rounded border border-slate-800">...</div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-12 lg:col-span-8 space-y-6">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Action Ledger</h3>
+                        <div id="vault-tx-feed" class="space-y-3">
+                            <!-- Populated via API -->
                         </div>
                     </div>
                 </div>
@@ -121,14 +221,62 @@
     </div>
 
     <script>
-        const runBtn = document.getElementById('run-btn');
-        const terminal = document.getElementById('terminal');
-        const txFeed = document.getElementById('tx-feed');
-        const statusBadge = document.getElementById('job-status');
+        // State Management
+        let currentView = 'console';
+        let isExecuting = false;
+
+        function switchView(view) {
+            currentView = view;
+            document.getElementById('view-console').classList.toggle('hidden', view !== 'console');
+            document.getElementById('view-vault').classList.toggle('hidden', view !== 'vault');
+            
+            // Nav styling
+            document.getElementById('nav-console').className = `nav-link ${view === 'console' ? 'active' : ''} flex items-center space-x-3 ${view === 'console' ? 'text-blue-400 p-2 rounded-md bg-blue-900/20' : 'text-slate-400 hover:text-white p-2 rounded-md hover:bg-slate-800/50'}`;
+            document.getElementById('nav-vault').className = `nav-link ${view === 'vault' ? 'active' : ''} flex items-center space-x-3 ${view === 'vault' ? 'text-blue-400 p-2 rounded-md bg-blue-900/20' : 'text-slate-400 hover:text-white p-2 rounded-md hover:bg-slate-800/50'}`;
+            
+            document.getElementById('view-title').textContent = view === 'console' ? 'Executor Dashboard' : 'Virtual Flow & Agent Registry';
+        }
+
+        // Persistent Logs
+        function saveLog(key, html) {
+            localStorage.setItem(key, html);
+        }
+
+        function loadLogs() {
+            const terminalHtml = localStorage.getItem('terminal_logs');
+            if (terminalHtml) document.getElementById('terminal').innerHTML = terminalHtml;
+            
+            const txHtml = localStorage.getItem('tx_logs');
+            if (txHtml) {
+                document.getElementById('tx-feed').innerHTML = txHtml;
+                document.getElementById('vault-tx-feed').innerHTML = txHtml.replace(/tx-feed-item/g, 'tx-card').replace(/glass/g, '');
+            }
+
+            const lastResult = localStorage.getItem('last_result');
+            if (lastResult) {
+                const data = JSON.parse(lastResult);
+                showResultPanel(data);
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('terminal').innerHTML = '<span class="text-slate-600 italic opacity-50"># Waiting for instructions...</span>';
+            document.getElementById('tx-feed').innerHTML = '';
+            document.getElementById('vault-tx-feed').innerHTML = '';
+            document.getElementById('result-panel').classList.add('hidden');
+            localStorage.removeItem('terminal_logs');
+            localStorage.removeItem('tx_logs');
+            localStorage.removeItem('last_result');
+        }
 
         function appendTX(type, amount, hash) {
+            const txFeed = document.getElementById('tx-feed');
+            const vaultTxFeed = document.getElementById('vault-tx-feed');
+            
+            const id = 'tx_' + Date.now();
             const div = document.createElement('div');
-            div.className = 'tx-feed-item glass p-3 rounded-lg text-xs flex justify-between items-center border-l-4 border-blue-500';
+            div.dataset.id = id;
+            div.className = 'tx-feed-item glass p-3 rounded-lg text-xs flex justify-between items-center border-l-4 border-blue-500 mb-3';
             div.innerHTML = `
                 <div>
                     <div class="text-slate-400 font-semibold">${type}</div>
@@ -137,20 +285,53 @@
                 <div class="text-blue-400 font-bold">-${amount}</div>
             `;
             txFeed.prepend(div);
+            saveLog('tx_logs', txFeed.innerHTML);
+
+            // Sync with Vault View
+            const vaultDiv = div.cloneNode(true);
+            vaultDiv.className = 'tx-card flex justify-between items-center animate-slide-in mb-3';
+            vaultTxFeed.prepend(vaultDiv);
         }
 
         function appendLog(text) {
+            const terminal = document.getElementById('terminal');
             const line = document.createElement('div');
             line.className = 'mb-1';
             line.innerHTML = `<span class="text-blue-500 mr-2">></span>${text}`;
             terminal.appendChild(line);
             terminal.scrollTop = terminal.scrollHeight;
+            saveLog('terminal_logs', terminal.innerHTML);
+        }
+
+        function showResultPanel(data) {
+            const resultPanel = document.getElementById('result-panel');
+            const statusBadge = document.getElementById('job-status');
+            
+            resultPanel.classList.remove('hidden');
+            document.getElementById('result-title').textContent = data.verified ? 'Verified Result' : 'Execution Result';
+            document.getElementById('res-job-id').textContent = `JOB_ID: ${data.job_id.slice(0, 18)}`;
+            document.getElementById('res-time').textContent = new Date(data.timestamp).toLocaleTimeString();
+            document.getElementById('res-verified').textContent = data.verified ? 'Verified' : 'Not Verified';
+            document.getElementById('res-verified').className = data.verified ? 'text-base font-semibold text-green-400' : 'text-base font-semibold text-amber-400';
+            document.getElementById('res-validation-reason').textContent = data.validation_reason || 'No validation details available.';
+            document.getElementById('res-validation-strategy').textContent = data.validation_strategy || 'n/a';
+            document.getElementById('res-pubkey').textContent = data.pubkey || 'n/a';
+            document.getElementById('res-signature').textContent = data.signature || 'n/a';
+            
+            statusBadge.textContent = data.status;
+            statusBadge.className = data.verified
+                ? 'px-2 py-0.5 rounded-full text-[10px] bg-green-900 text-green-400 font-bold uppercase tracking-tighter'
+                : 'px-2 py-0.5 rounded-full text-[10px] bg-amber-900 text-amber-400 font-bold uppercase tracking-tighter';
+            
+            localStorage.setItem('last_result', JSON.stringify(data));
         }
 
         async function updateWallets() {
             try {
                 const res = await fetch('/api/vault');
                 const data = await res.json();
+                
+                // Update Header
                 const header = document.getElementById('wallets-header');
                 header.innerHTML = data.wallets.map(w => `
                     <div class="flex flex-col items-end">
@@ -158,20 +339,92 @@
                         <span class="text-sm font-mono text-slate-200">${parseFloat(w.balance).toFixed(2)} <span class="text-blue-400">XLM</span></span>
                     </div>
                 `).join('');
+
+                // Update Vault Stats
+                document.getElementById('stat-reputation').textContent = data.registry.reputation;
+                const statusEl = document.getElementById('stat-status');
+                statusEl.textContent = data.registry.active ? 'ACTIVE' : 'INACTIVE';
+                statusEl.className = data.registry.active ? 'text-xl font-bold text-green-500' : 'text-xl font-bold text-red-500';
+                document.getElementById('contract-id-display').textContent = data.registry.id;
+
+                // Update On-chain Action Ledger
+                const vaultTxFeed = document.getElementById('vault-tx-feed');
+                // We keep session-local TXs (ones that start with 'tx_') but prepend on-chain history
+                const sessionTXs = Array.from(vaultTxFeed.children).filter(child => child.dataset.id && child.dataset.id.startsWith('tx_'));
+                
+                let historyHtml = data.transactions.map(tx => `
+                    <div class="tx-card flex justify-between items-center mb-3 opacity-80 border-slate-700">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-8 h-8 bg-slate-800 rounded flex items-center justify-center text-slate-400">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold">Ledger Finality (${tx.account})</div>
+                                <div class="text-[10px] text-slate-500 font-mono">HASH: ${tx.hash}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs font-bold text-slate-400">${tx.fee}</div>
+                            <div class="text-[10px] text-slate-600">${new Date(tx.created_at).toLocaleTimeString()}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                vaultTxFeed.innerHTML = historyHtml;
+                sessionTXs.forEach(stx => vaultTxFeed.prepend(stx));
+
             } catch (err) {}
         }
 
+        function updateFlowUI(state) {
+            const step = state.step;
+            const status = state.status;
+            
+            const stateText = document.getElementById('system-state-text');
+            const stepLabel = document.getElementById('current-step-label');
+            
+            if (status === 'idle') {
+                stateText.innerHTML = '<span class="indicator indicator-idle"></span>Waiting for instructions...';
+                stepLabel.textContent = 'STEP 0/4: READY';
+            } else {
+                stateText.innerHTML = `<span class="indicator indicator-active"></span>${status.toUpperCase()}...`;
+                stepLabel.textContent = `STEP ${step}/4: ${status.toUpperCase()}`;
+            }
+
+            for (let i = 1; i <= 4; i++) {
+                const node = document.getElementById(`node-${i}`);
+                const path = document.getElementById(`path-${i}`);
+                if (!node) continue;
+                
+                node.className = 'node-advanced p-6 text-center';
+                if (path) path.className = 'flow-path';
+
+                if (i < step) {
+                    node.classList.add('completed');
+                } else if (i === step) {
+                    node.classList.add('active');
+                    if (path) path.classList.add('flow-path-active');
+                }
+            }
+        }
+
+        // Main Execution Logic
+        const runBtn = document.getElementById('run-btn');
         runBtn.onclick = async () => {
             const image = document.getElementById('image').value;
             const cmd = document.getElementById('cmd').value;
             
-            terminal.innerHTML = '<span class="text-blue-500"># System initializing...</span>';
+            isExecuting = true;
+            document.getElementById('terminal').innerHTML = '<span class="text-blue-500"># System initializing...</span>';
+            document.getElementById('result-panel').classList.add('hidden');
             runBtn.disabled = true;
+            
+            const statusBadge = document.getElementById('job-status');
             statusBadge.textContent = 'Active';
             statusBadge.className = 'px-2 py-0.5 rounded-full text-[10px] bg-blue-900 text-blue-400 font-bold uppercase tracking-tighter animate-pulse';
 
             try {
-                const response = await fetch('/execute/stream', {
+                let response = await fetch('/execute/stream', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -183,9 +436,35 @@
                     })
                 });
 
+                if (response.status === 402) {
+                    appendLog('> Received 402 Payment Required. Fetching payment authorization...');
+                    const vaultRes = await fetch('/api/vault');
+                    const vaultData = await vaultRes.json();
+                    if (vaultData.transactions && vaultData.transactions.length > 0) {
+                        const txHash = vaultData.transactions[0].hash_full;
+                        appendLog(`> x402 Authorization found: ${txHash.slice(0, 8)}...`);
+                        response = await fetch('/execute/stream', {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-Stellar-Payment-Tx': txHash
+                            },
+                            body: JSON.stringify({
+                                task: 'manual_trigger',
+                                input: {},
+                                agent_id: 'agent_402',
+                                image: image,
+                                cmd: cmd
+                            })
+                        });
+                    } else {
+                        appendLog('[FATAL] No payment history found in vault.');
+                        return;
+                    }
+                }
+
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
-                let firstLog = true;
 
                 while (true) {
                     const { value, done } = await reader.read();
@@ -199,33 +478,45 @@
                             try {
                                 const data = JSON.parse(trimmedLine.slice(6));
                                 if (data.line) {
-                                    if (data.line.includes('Authorizing')) {
-                                        appendTX('AUTH', '0.00001 XLM', 'auth_' + Math.random().toString(36).substring(7));
+                                    if (data.line.includes('Authorization verified')) {
+                                        appendTX('AUTH (x402)', '0.05 XLM', 'auth_' + Math.random().toString(36).substring(7));
+                                    }
+                                    if (data.line.includes('Signing execution result')) {
+                                        appendTX('SIGN', '0.00000 XLM', 'sig_' + Math.random().toString(36).substring(7));
                                     }
                                     appendLog(data.line);
                                 } else if (data.job_id) {
-                                    document.getElementById('result-panel').classList.remove('hidden');
-                                    document.getElementById('res-job-id').textContent = `JOB_ID: ${data.job_id.slice(0, 18)}`;
-                                    document.getElementById('res-time').textContent = new Date(data.timestamp).toLocaleTimeString();
-                                    statusBadge.textContent = 'Completed';
-                                    statusBadge.className = 'px-2 py-0.5 rounded-full text-[10px] bg-green-900 text-green-400 font-bold uppercase tracking-tighter';
+                                    showResultPanel(data);
                                 }
-                            } catch (e) {
-                                console.error('Error parsing SSE data:', e, trimmedLine);
-                            }
+                            } catch (e) {}
                         }
                     }
                 }
             } catch (err) {
                 appendLog(`[FATAL] ${err.message}`);
             } finally {
+                isExecuting = false;
                 runBtn.disabled = false;
                 updateWallets();
             }
         };
 
+        // Background Polling
+        async function backgroundSync() {
+            try {
+                const res = await fetch('/execute/status');
+                if (res.ok) {
+                    const data = await res.json();
+                    updateFlowUI(data);
+                }
+                await updateWallets();
+            } catch (err) {}
+        }
+
+        // Initialization
+        loadLogs();
         updateWallets();
-        setInterval(updateWallets, 30000);
+        setInterval(backgroundSync, 2000);
     </script>
 </body>
 </html>

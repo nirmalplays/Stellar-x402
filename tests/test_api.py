@@ -12,7 +12,7 @@ client = TestClient(app)
 def test_execute_stream_endpoint():
     payload = {
         "task": "test-task",
-        "input": {},
+        "input": {"expected_substring": "hello-world"},
         "agent_id": "test-agent",
         "cmd": "python -c 'print(\"hello-world\")'"
     }
@@ -28,4 +28,10 @@ def test_execute_stream_endpoint():
         # Check for output line
         assert any("hello-world" in str(l.get("line")) for l in lines if "line" in l)
         # Check for final result
-        assert any(l.get("status") == "completed" for l in lines if "status" in l)
+        final_result = next(l for l in lines if "status" in l)
+        assert final_result["status"] == "completed"
+        assert final_result["verified"] is True
+        assert final_result["validation_strategy"] == "rule_based"
+        assert final_result["signature"]
+        assert final_result["pubkey"]
+        assert final_result["signed_payload"]["agent_id"] == "test-agent"

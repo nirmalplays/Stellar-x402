@@ -1,16 +1,25 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from api.routers import execute
-from stellar_sdk import Server
-from dotenv import load_dotenv
 import os
+import sys
 import webbrowser
 import threading
 import time
 from contextlib import asynccontextmanager
 
+if __package__ in (None, ""):
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from stellar_sdk import Server
+from dotenv import load_dotenv
+
 load_dotenv()
+
+from api.routers import execute
+from api.services.registry_client import registry_client
+import json
+import asyncio
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,8 +27,7 @@ async def lifespan(app: FastAPI):
     def open_browser():
         time.sleep(1.5)
         url = "http://127.0.0.1:8000"
-        print(f"\n[SYSTEM] Launching Dashboard: {url}")
-        print(f"[SYSTEM] Agent Vault: {url}/vault\n")
+        print(f"\n[SYSTEM] Launching Dashboard: {url}\n")
         try:
             webbrowser.open(url)
         except Exception:
@@ -38,6 +46,14 @@ static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
+@app.get("/api/discovery")
+async def get_agent_discovery():
+    metadata_path = os.path.join(os.path.dirname(__file__), "..", "agent_metadata.json")
+    if os.path.exists(metadata_path):
+        with open(metadata_path, "r") as f:
+            return json.load(f)
+    return {"error": "Metadata not found"}
+
 @app.get("/api/vault")
 async def get_vault_data():
     horizon_url = os.getenv("HORIZON_URL", "https://horizon-testnet.stellar.org")
@@ -45,8 +61,42 @@ async def get_vault_data():
     
     deployer_pk = os.getenv("DEPLOYER_PUBLIC_KEY")
     executor_pk = os.getenv("EXECUTOR_PUBLIC_KEY")
+    registry_id = os.getenv("REGISTRY_CONTRACT_ID")
     
-    data = {"wallets": [], "transactions": []}
+    data = {
+        "wallets": [], 
+        "transactions": [],
+        "registry": {
+            "id": registry_id,
+            "agent_id": "agent_402",
+            "reputation": 0,
+            "active": False
+        }
+    }
+
+    # Fetch real on-chain agent data
+    try:
+        agent_data = await asyncio.to_thread(registry_client.get_agent, "agent_402")
+        if agent_data:
+            from stellar_sdk import xdr
+            sc_val = xdr.SCVal.from_xdr(agent_data)
+            # The contract returns Option<Agent>. If it's not Void, it's an Agent struct.
+            if sc_val.type != xdr.SCValType.SCV_VOID:
+                # Agent struct: owner (Address), metadata_cid (String), reputation (i64), active (bool)
+                if sc_val.map and sc_val.map.sc_map:
+                    for entry in sc_val.map.sc_map:
+                        # Parse key
+                        key = ""
+                        if entry.key.type == xdr.SCValType.SCV_SYMBOL:
+                            key = entry.key.sym.sc_symbol.decode()
+                        
+                        # Parse val
+                        if key == "reputation":
+                            data["registry"]["reputation"] = entry.val.i64.int64
+                        elif key == "active":
+                            data["registry"]["active"] = entry.val.b
+    except Exception as e:
+        print(f"Error fetching agent from registry: {e}")
     
     for name, pk in [("Deployer", deployer_pk), ("Executor", executor_pk)]:
         if not pk: continue
@@ -61,6 +111,7 @@ async def get_vault_data():
                 data["transactions"].append({
                     "account": name,
                     "hash": tx["hash"][:8] + "...",
+                    "hash_full": tx["hash"],
                     "created_at": tx["created_at"],
                     "fee": f"{int(tx['fee_charged']) / 10000000} XLM",
                     "success": tx["successful"]
@@ -76,13 +127,6 @@ async def root():
     if os.path.exists(index_file):
         return FileResponse(index_file)
     return {"status": "ok", "project": "Stellarpay"}
-
-@app.get("/vault")
-async def vault_page():
-    vault_file = os.path.join(static_dir, "vault.html")
-    if os.path.exists(vault_file):
-        return FileResponse(vault_file)
-    raise HTTPException(status_code=404, detail="Vault page not found")
 
 if __name__ == "__main__":
     import uvicorn

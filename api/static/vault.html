@@ -113,19 +113,17 @@
                 <div class="grid grid-cols-12 gap-8 pt-8 border-t border-slate-800">
                     <div class="col-span-12 lg:col-span-4 space-y-6">
                         <h3 class="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Agent Stats</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="stat-box">
-                                <div class="text-[10px] text-slate-500 uppercase mb-1">Total TXs</div>
-                                <div id="stat-txs" class="text-xl font-bold">...</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="text-[10px] text-slate-500 uppercase mb-1">Success Rate</div>
-                                <div class="text-xl font-bold text-green-500">100%</div>
-                            </div>
+                        <div class="stat-box">
+                            <div class="text-[10px] text-slate-500 uppercase mb-1">On-Chain Reputation</div>
+                            <div id="stat-reputation" class="text-xl font-bold text-blue-400">...</div>
                         </div>
                         <div class="stat-box">
+                            <div class="text-[10px] text-slate-500 uppercase mb-1">Agent Status</div>
+                            <div id="stat-status" class="text-xl font-bold">...</div>
+                        </div>
+                        <div class="stat-box col-span-2">
                             <div class="text-[10px] text-slate-500 uppercase mb-2">Registry Contract ID</div>
-                            <div class="text-[10px] font-mono text-blue-400 break-all bg-slate-950 p-3 rounded border border-slate-800">CD3H67V5WFCS7SPKZQGTLVGFM3UIIHC5QLU5BXC4L5NFVMIUUPIKJBI6</div>
+                            <div id="contract-id-display" class="text-[10px] font-mono text-blue-400 break-all bg-slate-950 p-3 rounded border border-slate-800">...</div>
                         </div>
                     </div>
 
@@ -217,7 +215,13 @@
                 if (vaultRes.ok) {
                     const vaultData = await vaultRes.json();
                     
-                    document.getElementById('stat-txs').textContent = vaultData.transactions.length;
+                    document.getElementById('stat-reputation').textContent = vaultData.registry.reputation;
+                    const statusEl = document.getElementById('stat-status');
+                    statusEl.textContent = vaultData.registry.active ? 'ACTIVE' : 'INACTIVE';
+                    statusEl.className = vaultData.registry.active 
+                        ? 'text-xl font-bold text-green-500' 
+                        : 'text-xl font-bold text-red-500';
+                    document.getElementById('contract-id-display').textContent = vaultData.registry.id;
                     
                     const header = document.getElementById('wallets-header');
                     header.innerHTML = vaultData.wallets.map(w => `

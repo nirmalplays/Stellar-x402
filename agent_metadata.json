@@ -1,0 +1,20 @@
+{
+  "name": "Executor Agent",
+  "version": "1.0",
+  "protocols": ["x402", "8004", "A2A"],
+  "endpoint": "http://127.0.0.1:8000/execute/stream",
+  "capabilities": [
+    {
+      "name": "docker",
+      "price": "0.05 XLM",
+      "input_schema": {
+        "image": "string",
+        "cmd": "string"
+      }
+    }
+  ],
+  "verification": {
+    "type": "ed25519",
+    "public_key": "GCCNOHVSMCGE62GGT7FEGSRICTNRFOEOJKAOQPUNORGBRNJLR4USNGDF"
+  }
+}
