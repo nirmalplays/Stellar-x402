@@ -1,6 +1,8 @@
 # Stellar x402-utils + Web3 Agent Registry (PRD v4)
 ### Pay-Per-Execution Agent Infrastructure (OpenClaw + 8004 Compatible)
 
+![Advanced Dashboard](https://github.com/nirmalplays/Stellar-x402/raw/main/docs/dashboard_preview.png) *Visualizing real-time agent execution and blockchain finality.*
+
 ---
 
 ## 1. Problem Statement (Extended)
@@ -129,7 +131,23 @@ pub struct Agent {
 
 ---
 
-## 7. What's Inside
+## 7. New: Advanced Visualization Features
+
+The v4 update introduces a sophisticated observability layer for agent operations:
+
+### 7.1 Real-Time Execution Console
+- **Glassmorphism UI**: A professional dark-mode dashboard for configuring and launching sandboxed jobs.
+- **Live TX Feed**: Instantly see authorization transactions (fees) as they occur on the Stellar network.
+- **Compact Terminal**: Real-time streaming of Docker logs via Server-Sent Events (SSE).
+
+### 7.2 Agent Vault & Virtual Flow
+- **Event-Driven Lifecycle**: A 4-stage visual flow (**Auth → Registry → Execution → Finality**) that activates only when a job is running.
+- **State Synchronization**: The Vault page syncs with the backend every second to show exactly which stage the agent is in.
+- **Action Ledger**: A persistent feed of all wallet activities, detecting costs and authorization events.
+
+---
+
+## 8. What's Inside
 
 | Piece | Role |
 |--------|------|
@@ -141,12 +159,12 @@ pub struct Agent {
 
 ---
 
-## 8. Final System Definition
+## 9. Final System Definition
 
 > A Web3-native execution agent registered on-chain, discoverable by other agents, paid via Stellar, and returning cryptographically verified compute results.
 
 ---
 
-## 9. One-Line Pitch
+## 10. One-Line Pitch
 
 > “An OpenClaw-compatible, 8004-registered execution agent that lets any AI agent discover, pay, execute tasks, and verify results — trustlessly.”

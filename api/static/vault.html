@@ -206,7 +206,7 @@
         async function syncVault() {
             try {
                 // Sync flow state
-                const flowRes = await fetch('/api/flow-status');
+                const flowRes = await fetch('/execute/status');
                 if (flowRes.ok) {
                     const flowData = await flowRes.json();
                     updateFlowUI(flowData);
