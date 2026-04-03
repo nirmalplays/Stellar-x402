@@ -65,15 +65,15 @@ Any agent can:
      ┌─────────────────────┼─────────────────────┐
      │                     │                     │
   Agent A               Agent B               Agent C
-     │                     ▼
+    ▼                      ▼                     ▼
 ┌──────────────────────────────────────────────┐
 │        EXECUTOR AGENT (CORE SYSTEM)          │
 │----------------------------------------------│
 │ x402 Payment Layer (Stellar)                 │
 │ Docker Execution Engine                      │
-│ Validator Agent (AI + Rules)                │
-│ Result Signing (cryptographic proof)        │
-│ OpenClaw Skill Interface                   │
+│ Validator Agent (AI + Rules)                 │
+│ Result Signing (cryptographic proof)         │
+│ OpenClaw Skill Interface                     │
 └──────────────────────────────────────────────┘
 ```
 
