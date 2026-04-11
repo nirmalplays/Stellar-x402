@@ -189,27 +189,33 @@ async def execute_stream(
 
     if not payment_header and not tx_header:
         response.status_code = 402
-        body: dict = {
-            "x402Version": 2,
-            "error": "Payment Required",
-            "message": (
-                "Use x402 v2: pay per facilitator, then retry with X-Payment (JSON PaymentPayload). "
-                "Or use legacy flow: 0.05 native XLM to the executor and pass X-Stellar-Payment-Tx."
-            ),
-            "documentation": "https://developers.stellar.org/docs/build/agentic-payments/x402",
-            "legacy": {
-                "destination": os.getenv("EXECUTOR_PUBLIC_KEY"),
-                "amount": "0.05",
-                "asset": "native",
-                "header": "X-Stellar-Payment-Tx",
-                "prepare_unsigned_transaction": "/api/x402/prepare-payment",
-            },
+        legacy = {
+            "destination": os.getenv("EXECUTOR_PUBLIC_KEY"),
+            "amount": "0.05",
+            "asset": "native",
+            "header": "X-Stellar-Payment-Tx",
+            "prepare_unsigned_transaction": "/api/x402/prepare-payment",
         }
+
         if x402_facilitator_service.facilitator_enabled():
+            # x402 v2 response — includes x402Version, accepts, and facilitator
+            body: dict = {
+                "x402Version": 2,
+                "error": "Payment Required",
+                "message": (
+                    "Use x402 v2: pay per facilitator, then retry with X-Payment (JSON PaymentPayload). "
+                    "Or use legacy flow: 0.05 native XLM to the executor and pass X-Stellar-Payment-Tx."
+                ),
+                "documentation": "https://developers.stellar.org/docs/build/agentic-payments/x402",
+                "legacy": legacy,
+            }
             try:
                 body.update(x402_facilitator_service.build_payment_required_dict())
             except ValueError as e:
                 body["x402_configuration_error"] = str(e)
+            # Ensure accepts is always present even if build_payment_required_dict didn't set it
+            if "accepts" not in body:
+                body["accepts"] = []
             body["facilitator"] = {
                 "url": x402_facilitator_service.facilitator_base_url(),
                 "retry_header": "X-Payment",
@@ -217,6 +223,17 @@ async def execute_stream(
                     "Default requirement uses USDC on Stellar (see X402_PRICE / X402_STELLAR_ASSET). "
                     "Executor account must be able to receive that asset."
                 ),
+            }
+        else:
+            # Legacy-only response — no x402Version
+            body = {
+                "error": "Payment Required",
+                "message": (
+                    "Facilitator disabled. Use legacy flow: 0.05 native XLM to the executor "
+                    "and pass X-Stellar-Payment-Tx."
+                ),
+                "documentation": "https://developers.stellar.org/docs/build/agentic-payments/x402",
+                "legacy": legacy,
             }
         return body
 
