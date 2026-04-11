@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Header, Response
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 
 from api.models.job import JobRequest, JobResult, JobStatus
 from api.services.activity_log import push_event
@@ -106,12 +106,73 @@ async def _verify_payment(tx_hash: str) -> bool:
 async def deactivate_agent(agent_id: str):
     """Deactivates an agent in the registry contract."""
     try:
-        # We use the registry_client to perform the on-chain action
-        # The registry_client already handles using the DEPLOYER_SECRET
         await asyncio.to_thread(registry_client.deactivate_agent, agent_id)
         return {"status": "success", "message": f"Agent {agent_id} deactivated successfully."}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+@router.post("")
+async def execute_sync(
+    request: JobRequest,
+    x_stellar_payment_tx: str = Header(None, alias="X-Stellar-Payment-Tx"),
+    x_payment: str = Header(None, alias="X-Payment"),
+    payment_signature: str = Header(None, alias="Payment-Signature"),
+):
+    """
+    Non-SSE version of /execute/stream.
+    Runs the full payment → registry → Docker pipeline and returns a single JSON result.
+    Use this if your client cannot consume Server-Sent Events.
+    """
+    log_lines = []
+    final_result = None
+
+    stream_response = await execute_stream(
+        request=request,
+        x_stellar_payment_tx=x_stellar_payment_tx,
+        x_payment=x_payment,
+        payment_signature=payment_signature,
+        response=Response(),
+    )
+
+    # If execute_stream returned a plain dict (402 or error), pass it straight through
+    if isinstance(stream_response, dict):
+        status_code = 402 if stream_response.get("x402Version") == 2 else 400
+        return JSONResponse(content=stream_response, status_code=status_code)
+
+    # Otherwise consume the SSE stream and collect lines
+    async for chunk in stream_response.body_iterator:
+        text = chunk.decode("utf-8") if isinstance(chunk, bytes) else chunk
+        for raw_line in text.splitlines():
+            if not raw_line.startswith("data: "):
+                continue
+            payload = raw_line[6:].strip()
+            if not payload:
+                continue
+            try:
+                parsed = json.loads(payload)
+                # The final SSE event is the full JobResult (has job_id at top level)
+                if "job_id" in parsed:
+                    final_result = parsed
+                else:
+                    log_lines.append(parsed.get("line", ""))
+            except Exception:
+                pass
+
+    if final_result:
+        final_result["log"] = [l for l in log_lines if l]
+        return JSONResponse(content=final_result)
+
+    # Fallback: stream ended without a final result (payment or registry blocked it)
+    return JSONResponse(
+        status_code=402,
+        content={
+            "status": "failed",
+            "log": [l for l in log_lines if l],
+            "error": "Job did not complete — check log for details.",
+        },
+    )
+
 
 @router.post("/stream")
 async def execute_stream(
@@ -129,6 +190,7 @@ async def execute_stream(
     if not payment_header and not tx_header:
         response.status_code = 402
         body: dict = {
+            "x402Version": 2,
             "error": "Payment Required",
             "message": (
                 "Use x402 v2: pay per facilitator, then retry with X-Payment (JSON PaymentPayload). "
@@ -359,10 +421,9 @@ async def execute_stream(
 
         status = _resolve_job_status(output_acc, validation.verified)
         
-        # Update reputation on-chain (Section 13)
+        # Update reputation on-chain
         if status == JobStatus.COMPLETED:
             try:
-                # Automate reputation updates in the registry contract
                 await asyncio.to_thread(registry_client.update_reputation, request.agent_id, 1)
                 yield f"data: {json.dumps({'line': f'> Agent {request.agent_id} reputation updated (+1) on-chain.'})}\n\n"
             except Exception as e:
