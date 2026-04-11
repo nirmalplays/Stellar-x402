@@ -264,15 +264,42 @@ async def execute_stream(
         yield f"data: {json.dumps({'line': f'> Verifying agent {request.agent_id} in registry contract...'})}\n\n"
         
         # Real registry check
-        try:
-            agent_on_chain = await asyncio.to_thread(registry_client.get_agent, request.agent_id)
-            if not agent_on_chain and registry_client.contract_id:
-                yield f"data: {json.dumps({'line': f'[ERROR] Agent {request.agent_id} not found in registry!'})}\n\n"
+        # Fail-closed: if registry is unreachable or contract ID is missing, refuse the job.
+        if not registry_client.contract_id:
+            if os.getenv("REGISTRY_BYPASS_DEV", "").strip().lower() in ("1", "true", "yes"):
+                yield f"data: {json.dumps({'line': '[WARN] REGISTRY_BYPASS_DEV active — skipping registry check (dev only).'})}\n\n"
+            else:
+                yield f"data: {json.dumps({'line': '[ERROR] REGISTRY_CONTRACT_ID is not set. Job refused.'})}\n\n"
                 latest_job_state["status"] = "failed"
                 latest_job_state["step"] = 0
                 return
-        except Exception as e:
-            yield f"data: {json.dumps({'line': f'[WARN] Registry check error: {e}. Proceeding anyway.'})}\n\n"
+
+        else:
+            registry_error = None
+            agent_on_chain = None
+
+            for attempt in range(3):
+                try:
+                    agent_on_chain = await asyncio.to_thread(registry_client.get_agent, request.agent_id)
+                    registry_error = None
+                    break
+                except Exception as e:
+                    registry_error = e
+                    if attempt < 2:
+                        yield f"data: {json.dumps({'line': f'> Registry check attempt {attempt + 1} failed, retrying...'})}\n\n"
+                        await asyncio.sleep(2)
+
+            if registry_error is not None:
+                yield f"data: {json.dumps({'line': f'[ERROR] Registry unreachable after 3 attempts: {registry_error}. Job refused.'})}\n\n"
+                latest_job_state["status"] = "failed"
+                latest_job_state["step"] = 0
+                return
+
+            if not agent_on_chain:
+                yield f"data: {json.dumps({'line': f'[ERROR] Agent {request.agent_id} not found in registry. Job refused.'})}\n\n"
+                latest_job_state["status"] = "failed"
+                latest_job_state["step"] = 0
+                return
 
         yield f"data: {json.dumps({'line': f'> Agent {request.agent_id} verified on-chain.'})}\n\n"
         await asyncio.sleep(1)

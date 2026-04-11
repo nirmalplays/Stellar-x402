@@ -11,7 +11,7 @@ if __package__ in (None, ""):
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from stellar_sdk import Server
 from dotenv import load_dotenv
 
@@ -65,6 +65,12 @@ if os.path.exists(static_dir):
 async def get_agent_discovery():
     """Agent card from `agent_metadata.json` plus `PUBLIC_BASE_URL` and x402 hints."""
     return build_discovery_payload()
+
+
+@app.get("/.well-known/x402")
+async def well_known_x402():
+    """Standard x402 discovery endpoint — redirects to /api/discovery for interoperability."""
+    return RedirectResponse(url="/api/discovery")
 
 
 @app.get("/api/discovery/resolved")
