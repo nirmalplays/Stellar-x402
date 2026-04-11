@@ -11,6 +11,48 @@ from docker.errors import APIError, ImageNotFound
 _LOG_END = object()
 _LOG_NO_CHUNK = object()
 
+# ---------------------------------------------------------------------------
+# Image allowlist — only these images can be run as jobs.
+# To add more, extend this set or set DOCKER_ALLOWED_IMAGES in .env
+# (comma-separated list, e.g. "python:3.11-slim,node:20-slim").
+# In dev mode (REGISTRY_BYPASS_DEV=true), the allowlist is still enforced.
+# To disable the allowlist entirely (NOT recommended for production),
+# set DOCKER_DISABLE_ALLOWLIST=true.
+# ---------------------------------------------------------------------------
+_DEFAULT_ALLOWED_IMAGES = {
+    "python:3.11-slim",
+    "python:3.11",
+    "python:3.12-slim",
+    "python:3.12",
+    "node:20-slim",
+    "node:20",
+    "alpine:latest",
+    "alpine:3.19",
+    "ubuntu:22.04",
+    "ubuntu:24.04",
+    "busybox:latest",
+}
+
+
+def _get_allowed_images() -> set[str]:
+    """Returns the set of allowed images from env or defaults."""
+    env_val = os.getenv("DOCKER_ALLOWED_IMAGES", "").strip()
+    if env_val:
+        extras = {img.strip() for img in env_val.split(",") if img.strip()}
+        return _DEFAULT_ALLOWED_IMAGES | extras
+    return _DEFAULT_ALLOWED_IMAGES
+
+
+def _allowlist_disabled() -> bool:
+    v = os.getenv("DOCKER_DISABLE_ALLOWLIST", "").strip().lower()
+    return v in ("1", "true", "yes")
+
+
+def _image_allowed(image: str) -> bool:
+    if _allowlist_disabled():
+        return True
+    return image.strip() in _get_allowed_images()
+
 
 def _simulation_allowed() -> bool:
     v = os.getenv("ALLOW_DOCKER_SIMULATION", "").strip().lower()
@@ -41,10 +83,16 @@ class DockerRunner:
             return False
 
     async def run(self, image: str, cmd: str, timeout: int = 30) -> AsyncGenerator[str, None]:
+        # Check image allowlist before doing anything else
+        if not _image_allowed(image):
+            allowed = sorted(_get_allowed_images())
+            yield f"[ERROR] Image '{image}' is not in the allowlist. Allowed images: {', '.join(allowed)}"
+            return
+
         # Try to connect.
         try:
             client = docker.from_env()
-            client.ping() # Verify actual connectivity
+            client.ping()  # Verify actual connectivity
         except Exception as e:
             if _simulation_allowed():
                 yield f"[WARN] Docker daemon not available: {e}"
