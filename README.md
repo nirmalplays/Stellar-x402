@@ -1,0 +1,280 @@
+# Stellar x402 Executor
+
+> A Web3-native execution agent — pay per job in USDC via x402, verify identity on-chain, run sandboxed Docker tasks, get cryptographically signed results.
+
+[![CI](https://github.com/nirmalplays/Stellar-x402/actions/workflows/ci.yml/badge.svg)](https://github.com/nirmalplays/Stellar-x402/actions)
+
+---
+
+## What This Is
+
+A pay-per-execution agent infrastructure built on Stellar. Any AI agent or HTTP client can:
+
+1. **Discover** your agent via `/.well-known/x402` or `/api/discovery`
+2. **Pay** in USDC using the x402 protocol (or legacy XLM)
+3. **Execute** a sandboxed Docker job
+4. **Receive** a cryptographically signed, validated result
+
+Built for the agentic economy — no API keys, no centralized billing, no trust assumptions.
+
+---
+
+## Architecture
+
+```
+Any Agent / Client
+        │
+        ▼
+  POST /execute/stream   (SSE)
+  POST /execute          (JSON, non-SSE clients)
+        │
+        ├── Step 1: Payment verification
+        │     ├── x402 v2: USDC via facilitator (primary)
+        │     └── Legacy: 0.05 XLM via Horizon (fallback)
+        │
+        ├── Step 2: Registry check
+        │     └── Soroban smart contract on Stellar
+        │
+        ├── Step 3: Docker execution
+        │     └── Sandboxed container (no network, 256MB RAM)
+        │
+        └── Step 4: Signed result
+              └── Ed25519 signature + reputation update
+```
+
+---
+
+## Quickstart
+
+### 🚀 Run a Node on a Potato PC
+
+Want to join the x402 network and earn USDC by running agents (like Openclaw)? Use our interactive setup script:
+
+```bash
+python scripts/setup_node.py
+```
+
+This will:
+- Generate your Stellar keys
+- Configure your `.env`
+- Register you in the Soroban registry
+- Set up a secure **Secrets Vault** for your API keys
+
+---
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/nirmalplays/Stellar-x402.git
+cd Stellar-x402
+pip install -r requirements.txt
+```
+
+### 2. Configure environment
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and fill in:
+
+| Variable | Description |
+|---|---|
+| `DEPLOYER_PUBLIC_KEY` / `DEPLOYER_SECRET` | Account that owns the registry contract |
+| `EXECUTOR_PUBLIC_KEY` / `EXECUTOR_SECRET` | Account that receives payments |
+| `REGISTRY_CONTRACT_ID` | Deployed Soroban registry contract ID |
+| `PUBLIC_BASE_URL` | ⚠️ Your public URL — required for discovery to work |
+| `X402_FACILITATOR_URL` | Facilitator endpoint (default: `https://x402.org/facilitator`) |
+| `X402_PRICE` | Price per job in USDC (default: `0.01`) |
+
+Generate and fund testnet accounts at: https://lab.stellar.org
+
+> **Note:** If `REGISTRY_CONTRACT_ID` is not set, all jobs are refused by default.
+> For local dev without a deployed contract, set `REGISTRY_BYPASS_DEV=true`.
+
+### 3. Run
+
+```bash
+python -m uvicorn api.main:app --host 0.0.0.0 --port 8000
+```
+
+Dashboard opens automatically at http://127.0.0.1:8000
+
+### 4. Run with Docker Compose
+
+```bash
+docker compose up --build
+```
+
+Open http://localhost:8000
+
+---
+
+## Payment Methods
+
+### Primary: x402 v2 (USDC via facilitator)
+
+This is the standard x402 protocol. The client pays USDC and retries with the payment proof.
+
+```
+POST /execute/stream
+Header: X-Payment: <PaymentPayload JSON>
+```
+
+Two facilitator options:
+- **Coinbase** (testnet, no key needed): `https://x402.org/facilitator`
+- **OpenZeppelin** (testnet + mainnet, API key required): `https://channels.openzeppelin.com/x402/testnet`
+
+Compatible wallets: Freighter (browser extension), Albedo, Hana, HOT, Klever, OneKey.
+
+### Fallback: Legacy XLM
+
+Send 0.05 native XLM directly to `EXECUTOR_PUBLIC_KEY` and pass the transaction hash:
+
+```
+POST /execute/stream
+Header: X-Stellar-Payment-Tx: <transaction_hash>
+```
+
+Prepare an unsigned transaction first:
+```bash
+POST /api/x402/prepare-payment
+Body: {"source_public_key": "G..."}
+```
+
+---
+
+## API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/execute/stream` | SSE streaming execution (primary) |
+| `POST` | `/execute` | Single JSON response (non-SSE clients) |
+| `GET` | `/.well-known/x402` | Standard x402 discovery |
+| `GET` | `/api/discovery` | Agent card + x402 hints |
+| `GET` | `/api/discovery/resolved` | Merged on-chain + IPFS metadata |
+| `GET` | `/api/vault` | Wallet balances + transaction history |
+| `GET` | `/api/activity` | Live event feed |
+| `POST` | `/api/pay` | Demo: auto-send 0.05 XLM (dev only) |
+### Example request
+
+```bash
+curl -X POST http://localhost:8000/execute \
+  -H "Content-Type: application/json" \
+  -H "X-Stellar-Payment-Tx: YOUR_TX_HASH" \
+  -d '{
+    "agent_id": "agent_402",
+    "task": "run playwright script",
+    "image": "mcr.microsoft.com/playwright:v1.43.0-jammy",
+    "cmd": "npx playwright test",
+    "allow_browser": true,
+    "allow_network": true
+  }'
+```
+
+---
+
+## Features
+
+### 🌐 Browser Automation
+By setting `"allow_browser": true` and `"allow_network": true` in your `JobRequest`, the executor node will:
+- Enable internet access for the container.
+- Allocate `1GB` of Shared Memory (`shm_size`) for Chromium.
+- Relax PID limits to allow multiple browser processes.
+
+### 🔒 Secrets Vault
+As a node runner, you can safely pass API keys to your agents without exposing them to the network.
+1. Create a `.env` file in the `secrets/` directory: `secrets/<agent_id>.env`
+2. Add your keys: `OPENAI_API_KEY=sk-...`
+3. The `DockerRunner` automatically injects these into the container environment at runtime.
+
+---
+
+## On-Chain Registry
+
+```json
+{
+  "job_id": "abc-123",
+  "status": "completed",
+  "output": "4",
+  "verified": true,
+  "signature": "...",
+  "log": ["..."]
+}
+```
+
+---
+
+## On-Chain Registry
+
+The Soroban registry contract stores:
+
+```rust
+pub struct Agent {
+    pub owner: Address,
+    pub metadata_cid: String,  // IPFS CID
+    pub reputation: i64,
+    pub active: bool,
+}
+```
+
+Deploy the contract:
+
+```bash
+cd contracts/registry
+stellar contract deploy --wasm target/wasm32-unknown-unknown/release/registry.wasm --network testnet
+```
+
+Register your agent:
+
+```bash
+python scripts/registry_client.py
+```
+
+Publish metadata to IPFS (optional):
+
+```bash
+# Set PINATA_JWT in .env first
+python scripts/publish_agent_metadata_ipfs.py
+```
+
+---
+
+## Security
+
+Docker jobs run in strict isolation:
+
+- No network access (`--network=none`)
+- 256MB memory limit
+- 0.5 CPU limit
+- 64 process limit
+- Read-only filesystem
+- No new privileges
+
+---
+
+## Project Structure
+
+```
+api/
+├── main.py                     # FastAPI app, discovery, vault
+├── routers/
+│   ├── execute.py              # Payment → registry → Docker → sign
+│   └── x402_prep.py            # Prepare unsigned XDR for any payer
+├── services/
+│   ├── docker_runner.py        # Sandboxed Docker execution
+│   ├── registry_client.py      # Soroban contract calls
+│   ├── x402_facilitator_service.py  # USDC payment via facilitator
+│   ├── validator.py            # Output validation (AI + rules)
+│   └── signer.py               # Ed25519 result signing
+├── static/                     # Dashboard UI
+contracts/registry/             # Soroban smart contract (Rust)
+scripts/                        # Setup, registry, IPFS publish
+tests/                          # Test suite
+```
+
+---
+
+## One-Line Pitch
+
+> An x402-native execution agent that lets any AI agent discover, pay in USDC, run sandboxed Docker tasks, and receive cryptographically verified results — trustlessly on Stellar.
