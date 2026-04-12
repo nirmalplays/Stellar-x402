@@ -196,8 +196,8 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col overflow-hidden min-w-0 bg-[radial-gradient(ellipse_at_80%_0%,rgba(59,130,246,0.12),transparent_50%),radial-gradient(circle_at_top_right,rgba(109,40,217,0.08),transparent_45%),linear-gradient(180deg,#0a0f18,#05070a)]">
-            <header class="p-6 border-b border-slate-800 flex justify-between items-center glass">
+        <main class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[radial-gradient(ellipse_at_80%_0%,rgba(59,130,246,0.12),transparent_50%),radial-gradient(circle_at_top_right,rgba(109,40,217,0.08),transparent_45%),linear-gradient(180deg,#0a0f18,#05070a)]">
+            <header class="shrink-0 p-6 border-b border-slate-800 flex justify-between items-center glass">
                 <h2 id="view-title" class="text-lg font-semibold">Executor Dashboard</h2>
                 <div id="wallets-header" class="flex space-x-6">
                     <!-- Loaded via JS -->
@@ -205,7 +205,7 @@
             </header>
 
             <!-- Console View -->
-            <div id="view-console" class="flex-1 p-6 overflow-y-auto grid grid-cols-12 gap-6">
+            <div id="view-console" class="min-h-0 flex-1 overflow-y-auto p-6 grid grid-cols-12 gap-6">
                 <!-- Configuration & Launch -->
                 <div class="col-span-12 lg:col-span-4 space-y-6">
                     <div class="glass p-6 rounded-2xl glow-blue">
@@ -292,7 +292,7 @@
             </div>
 
             <!-- Vault View -->
-            <div id="view-vault" class="hidden flex-1 p-8 overflow-y-auto space-y-12">
+            <div id="view-vault" class="hidden min-h-0 flex-1 overflow-y-auto p-8 space-y-12">
                 <section class="space-y-6">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-2">
                         <div>
