@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+stellar-sdk
+docker
+redis
+google-generativeai
+pydantic
+pynacl
+pytest
+pytest-asyncio
+httpx
+python-dotenv
+x402>=2.5,<3

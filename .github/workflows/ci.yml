@@ -1,0 +1,56 @@
+# =============================================================================
+# Stellar x402 Executor — CI
+# Runs on every push and pull request.
+# Skips tests that require a live Docker daemon or Stellar testnet.
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+
+    env:
+      # Minimal env so the app can import without crashing
+      STELLAR_NETWORK: TESTNET
+      HORIZON_URL: https://horizon-testnet.stellar.org
+      SOROBAN_RPC_URL: https://soroban-testnet.stellar.org
+      DEPLOYER_PUBLIC_KEY: GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGFUCK1EXXBQ2JY6HMKV99
+      EXECUTOR_PUBLIC_KEY: GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGFUCK1EXXBQ2JY6HMKV99
+      DEPLOYER_SECRET: SCZANGBA5RLMPI5CHVZJZ24X7VYJCJZXBMHVJ4UU4NMBH5UJ4WMXMTO
+      EXECUTOR_SECRET: SCZANGBA5RLMPI5CHVZJZ24X7VYJCJZXBMHVJ4UU4NMBH5UJ4WMXMTO
+      REGISTRY_CONTRACT_ID: ""
+      REGISTRY_BYPASS_DEV: "true"
+      PUBLIC_BASE_URL: http://localhost:8000
+      X402_FACILITATOR_ENABLED: "true"
+      GEMINI_API_KEY: ""
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          flake8 api/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 api/ --count --max-line-length=120 --statistics --exit-zero
+
+      - name: Run tests (no Docker, no testnet)
+        run: |
+          pytest -m "not docker and not integration" --tb=short -q
