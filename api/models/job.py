@@ -32,6 +32,7 @@ class JobResult(BaseModel):
     verified: bool = False
     validation_strategy: Optional[ValidationStrategy] = None
     validation_reason: Optional[str] = None
+    executor_agent: Optional[str] = "openclaw"
     signature: Optional[str] = None
     pubkey: Optional[str] = None
     signed_payload: Optional[Dict[str, Any]] = None

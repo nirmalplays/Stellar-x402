@@ -21,15 +21,15 @@ def build_a2a_agent_card() -> dict[str, Any] | None:
     meta = load_local_agent_metadata()
     if "error" in meta:
         meta = {
-            "name": "Stellar x402 Executor",
-            "description": "Configure agent_metadata.json for richer discovery.",
+            "name": "OpenClaw Executor",
+            "description": "OpenClaw-compatible pay-per-execution agent infrastructure.",
         }
 
     return {
-        "name": meta.get("name", "Executor Agent"),
+        "name": meta.get("name", "OpenClaw Executor"),
         "description": meta.get(
             "description",
-            "Sandboxed Docker execution on Stellar with x402 (USDC / legacy XLM) and on-chain registry.",
+            "Sandboxed OpenClaw Docker execution on Stellar with x402 (USDC / legacy XLM) and on-chain registry.",
         ),
         "version": str(meta.get("version", "1.0.0")),
         "documentationUrl": f"{base}/docs",
@@ -46,27 +46,28 @@ def build_a2a_agent_card() -> dict[str, Any] | None:
             },
         ],
         "provider": {
-            "organization": os.getenv("AGENT_PROVIDER_ORG", "Stellar x402 Executor"),
+            "organization": os.getenv("AGENT_PROVIDER_ORG", "OpenClaw Foundation"),
             "url": os.getenv("AGENT_PROVIDER_URL", "https://developers.stellar.org/docs/build/agentic-payments/x402"),
         },
         "capabilities": {
             "streaming": True,
             "pushNotifications": False,
             "extendedAgentCard": False,
+            "openclaw_compatible": True,
         },
         "defaultInputModes": ["text/plain", "application/json"],
         "defaultOutputModes": ["text/plain", "application/json"],
         "skills": [
             {
-                "id": "docker_execution",
-                "name": "Docker execution",
+                "id": "openclaw_execution",
+                "name": "OpenClaw Docker execution",
                 "description": (
-                    "Run a containerized command after x402 / registry checks. "
+                    "Run a containerized command using the OpenClaw executor after x402 / registry checks. "
                     "Pass Stellar payment headers on the HTTP request. "
                     "Send `metadata.executor` with `image`, `cmd`, `agent_id`, optional `task` and `input`, "
                     "or send a JSON object as the first text part."
                 ),
-                "tags": ["docker", "x402", "stellar", "soroban", "compute"],
+                "tags": ["openclaw", "docker", "x402", "stellar", "soroban", "compute"],
                 "examples": [
                     '{"metadata":{"executor":{"agent_id":"agent_402","image":"python:3.11-slim","cmd":"python -c \\"print(1+1)\\""}}}',
                 ],

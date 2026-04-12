@@ -446,6 +446,7 @@ async def execute_stream(
             signed_payload = {
                 "job_id": job_id,
                 "agent_id": request.agent_id,
+                "executor_agent": "openclaw",
                 "task": request.task,
                 "output": output_text,
                 "verified": validation.verified,
@@ -454,18 +455,18 @@ async def execute_stream(
                 "timestamp": datetime.now(UTC).isoformat(),
             }
             yield f"data: {json.dumps({'line': f'> Validation result: {validation.reason}'})}\n\n"
-            yield f"data: {json.dumps({'line': '> Signing execution result...'})}\n\n"
+            yield f"data: {json.dumps({'line': '> Signing execution result (OpenClaw)...'})}\n\n"
 
             signature = result_signer.sign_payload(signed_payload)
             latest_job_state["last_tx"] = {
-                "type": "SIGN",
+                "type": "SIGN (OpenClaw)",
                 "amount": "0.00000 XLM",
                 "id": job_id[:8],
             }
             push_event(
                 kind="sign",
                 severity="success",
-                title="Result signed",
+                title="Result signed (OpenClaw)",
                 detail=f"Job {job_id[:8]}… · off-chain signature",
                 job_id=job_id,
             )
@@ -495,7 +496,7 @@ async def execute_stream(
             push_event(
                 kind="job",
                 severity="success" if status == JobStatus.COMPLETED else "error",
-                title="Job "
+                title="Job (OpenClaw) "
                 + (
                     "completed"
                     if status == JobStatus.COMPLETED
@@ -514,6 +515,7 @@ async def execute_stream(
                 verified=validation.verified,
                 validation_strategy=validation.strategy,
                 validation_reason=validation.reason,
+                executor_agent="openclaw",
                 signature=signature,
                 pubkey=result_signer.public_key,
                 signed_payload=signed_payload,

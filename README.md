@@ -1,6 +1,6 @@
-# Stellar x402 Executor
+# OpenClaw Stellar Executor
 
-> A Web3-native execution agent — pay per job in USDC via x402, verify identity on-chain, run sandboxed Docker tasks, get cryptographically signed results.
+> A Web3-native execution agent — pay per job in USDC via x402, verify identity on-chain via Soroban, run sandboxed Docker tasks using the **OpenClaw** engine, get cryptographically signed results.
 
 [![CI](https://github.com/nirmalplays/Stellar-x402/actions/workflows/ci.yml/badge.svg)](https://github.com/nirmalplays/Stellar-x402/actions)
 
@@ -8,11 +8,11 @@
 
 ## What This Is
 
-A pay-per-execution agent infrastructure built on Stellar. Any AI agent or HTTP client can:
+An OpenClaw-compatible, pay-per-execution agent infrastructure built on Stellar. Any AI agent or HTTP client can:
 
 1. **Discover** your agent via `/.well-known/x402` or `/api/discovery`
 2. **Pay** in USDC using the x402 protocol (or legacy XLM)
-3. **Execute** a sandboxed Docker job
+3. **Execute** a sandboxed Docker job via the **OpenClaw** runner
 4. **Receive** a cryptographically signed, validated result
 
 Built for the agentic economy — no API keys, no centralized billing, no trust assumptions.
@@ -22,7 +22,7 @@ Built for the agentic economy — no API keys, no centralized billing, no trust 
 ## Architecture
 
 ```
-Any Agent / Client
+Any Agent / Client (OpenClaw / A2A)
         │
         ▼
   POST /execute/stream   (SSE)
@@ -35,7 +35,7 @@ Any Agent / Client
         ├── Step 2: Registry check
         │     └── Soroban smart contract on Stellar
         │
-        ├── Step 3: Docker execution
+        ├── Step 3: OpenClaw Docker execution
         │     └── Sandboxed container (no network, 256MB RAM)
         │
         └── Step 4: Signed result

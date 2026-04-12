@@ -2,7 +2,7 @@
 
 import pytest
 
-from api.services.docker_runner import DockerRunner
+from api.services.docker_runner import OpenClawRunner
 
 
 class _UnreachablyClient:
@@ -20,7 +20,7 @@ async def test_no_daemon_fails_closed(monkeypatch):
         lambda: _UnreachablyClient(),
     )
     lines = []
-    async for line in DockerRunner().run("python:3.11-slim", "echo hi"):
+    async for line in OpenClawRunner().run("python:3.11-slim", "echo hi"):
         lines.append(line)
     assert any("Docker is required" in line and "[ERROR]" in line for line in lines)
     assert not any("SIMULATION" in line for line in lines)
