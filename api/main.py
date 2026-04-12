@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
             host = os.getenv("BROWSER_OPEN_HOST", "127.0.0.1")
             port = os.getenv("PORT", "8000")
             url = f"http://{host}:{port}"
-            print(f"\n[SYSTEM] Launching Dashboard: {url}\n")
+            print(f"\n[SYSTEM] Dashboard: {url}/  ·  Home: {url}/home\n")
             try:
                 webbrowser.open(url)
             except Exception:
@@ -50,7 +50,12 @@ async def lifespan(app: FastAPI):
         threading.Thread(target=open_browser, daemon=True).start()
     yield
 
-app = FastAPI(title="Stellarpay Executor API", lifespan=lifespan)
+app = FastAPI(
+    title="Stellarpay Executor API",
+    lifespan=lifespan,
+    docs_url="/_swagger/ui",
+    redoc_url="/redoc",
+)
 
 # Main Execution Router
 app.include_router(execute.router)
@@ -238,10 +243,44 @@ async def get_vault_data():
 
 @app.get("/")
 async def root():
+    """Executor dashboard (primary app UI)."""
     index_file = os.path.join(static_dir, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
     return {"status": "ok", "project": "Stellarpay"}
+
+
+@app.get("/home")
+async def home_page():
+    """Marketing / home page (separate from the dashboard at `/`)."""
+    home_file = os.path.join(static_dir, "home.html")
+    if os.path.exists(home_file):
+        return FileResponse(home_file)
+    raise HTTPException(status_code=404, detail="Home page not found")
+
+
+@app.get("/dashboard")
+async def dashboard_legacy():
+    """Previous path; dashboard lives at `/`."""
+    return RedirectResponse(url="/", status_code=302)
+
+
+@app.get("/dev/docs")
+async def dev_docs_page():
+    """Static developer documentation (distinct from OpenAPI at /docs)."""
+    doc_file = os.path.join(static_dir, "dev-docs.html")
+    if os.path.exists(doc_file):
+        return FileResponse(doc_file)
+    raise HTTPException(status_code=404, detail="Developer documentation not found")
+
+
+@app.get("/docs", include_in_schema=False)
+async def docs_shell_page():
+    """Swagger UI inside site chrome (back nav). Raw UI remains at `/_swagger/ui`."""
+    shell = os.path.join(static_dir, "swagger-shell.html")
+    if os.path.exists(shell):
+        return FileResponse(shell)
+    return RedirectResponse(url="/_swagger/ui", status_code=302)
 
 if __name__ == "__main__":
     import uvicorn

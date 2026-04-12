@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth scroll-pt-28">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StellarX-402 — Developer Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/site-nav.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: Inter, system-ui, sans-serif; }
+        .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+    </style>
+</head>
+<body class="site-shell min-h-screen flex flex-col text-slate-300 antialiased">
+    <header class="global-topnav sticky top-0 z-[100]" role="banner">
+        <div class="global-topnav-inner px-4 py-3 sm:px-6">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <a href="/home" class="global-brand" aria-label="StellarX-402 home">
+                    <span class="global-brand-mark"><i class="fas fa-bolt text-sm text-white"></i></span>
+                    <span class="global-brand-text">
+                        <span class="global-brand-title">StellarX-402</span>
+                        <span class="global-brand-tag">Developer docs</span>
+                    </span>
+                    <span class="live-dot-nav shrink-0" title="Docs"></span>
+                </a>
+                <nav class="global-nav-pills" aria-label="Site pages">
+                    <a href="/home" class="nav-pill nav-pill-ghost"><i class="fas fa-home text-[0.7rem] opacity-80"></i> Home</a>
+                    <a href="/" class="nav-pill nav-pill-ghost"><i class="fas fa-gauge-high text-[0.7rem] opacity-80"></i> Dashboard</a>
+                    <a href="/dev/docs" class="nav-pill nav-pill-active"><i class="fas fa-book text-[0.7rem] opacity-90"></i> Dev Docs</a>
+                    <a href="/docs" class="nav-pill nav-pill-ghost"><i class="fas fa-code text-[0.7rem] opacity-80"></i> API</a>
+                    <a href="https://github.com/nirmalplays/Stellar-x402" class="nav-pill nav-pill-ghost" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> GitHub</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+        <!-- Sidebar -->
+        <aside class="w-full shrink-0 border-b border-slate-800/80 doc-sidebar-glass backdrop-blur-md lg:sticky lg:top-14 lg:z-40 lg:h-[calc(100dvh-3.5rem)] lg:w-72 lg:max-w-none lg:self-start lg:border-b-0 lg:border-r lg:overflow-y-auto">
+            <div class="p-5 sm:p-6">
+                <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400/90">On this page</p>
+                <p class="mt-1 text-xs text-slate-500">Jump to a section</p>
+                <nav class="mt-6 flex gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:pb-0" aria-label="Documentation sections">
+                    <a href="#getting-started" class="doc-nav-link block shrink-0 px-3 py-2 text-sm text-slate-400 lg:shrink">Getting Started</a>
+                    <a href="#authentication-payment" class="doc-nav-link block shrink-0 px-3 py-2 text-sm text-slate-400 lg:shrink">Authentication &amp; Payment</a>
+                    <a href="#api-reference" class="doc-nav-link block shrink-0 px-3 py-2 text-sm text-slate-400 lg:shrink">API Reference</a>
+                    <a href="#execution" class="doc-nav-link block shrink-0 px-3 py-2 text-sm text-slate-400 lg:shrink">Execution</a>
+                    <a href="#agent-identity" class="doc-nav-link block shrink-0 px-3 py-2 text-sm text-slate-400 lg:shrink">Agent Identity (8004)</a>
+                    <a href="#a2a-protocol" class="doc-nav-link block shrink-0 px-3 py-2 text-sm text-slate-400 lg:shrink">A2A Protocol</a>
+                    <a href="#validation" class="doc-nav-link block shrink-0 px-3 py-2 text-sm text-slate-400 lg:shrink">Validation</a>
+                    <a href="#on-chain-registry" class="doc-nav-link block shrink-0 px-3 py-2 text-sm text-slate-400 lg:shrink">On-Chain Registry</a>
+                    <a href="#security-model" class="doc-nav-link block shrink-0 px-3 py-2 text-sm text-slate-400 lg:shrink">Security Model</a>
+                    <a href="#configuration-reference" class="doc-nav-link block shrink-0 px-3 py-2 text-sm text-slate-400 lg:shrink">Configuration Reference</a>
+                </nav>
+                <div class="mt-8 space-y-1 border-t border-slate-800/80 pt-6 text-xs">
+                    <a href="/" class="flex items-center gap-2 rounded-lg px-2 py-2 text-blue-400 hover:bg-slate-800/50 hover:text-blue-300"><i class="fas fa-arrow-right text-[10px]"></i> Dashboard</a>
+                    <a href="/docs" class="flex items-center gap-2 rounded-lg px-2 py-2 text-slate-500 hover:bg-slate-800/50 hover:text-slate-300"><i class="fas fa-plug text-[10px]"></i> OpenAPI / Swagger</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="doc-main min-w-0 flex-1 overflow-y-auto bg-gradient-to-b from-transparent via-slate-950/20 to-slate-950/40 px-4 py-8 sm:px-8 lg:px-12 lg:py-10">
+            <article class="mx-auto max-w-3xl doc-section-card p-6 sm:p-10 space-y-14 lg:space-y-16 ring-1 ring-white/[0.04]">
+
+                <header class="border-b border-slate-700/40 pb-10">
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-blue-400/90">StellarX-402</p>
+                    <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Developer documentation</h1>
+                    <p class="mt-4 max-w-2xl text-sm leading-relaxed text-slate-400">Run, integrate, and extend the OpenClaw-compatible executor — x402, Soroban, A2A, and signed Docker jobs.</p>
+                </header>
+
+                <!-- 1 -->
+                <section id="getting-started" class="scroll-mt-28">
+                    <h2 class="text-xl font-bold text-white">Getting Started</h2>
+
+                    <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-500">Prerequisites</h3>
+                    <ul class="mt-3 list-inside list-disc space-y-2 text-sm text-slate-400">
+                        <li>Python 3.10+</li>
+                        <li>Docker installed and running</li>
+                        <li>A Stellar testnet account — <a href="https://lab.stellar.org" class="text-blue-400 underline hover:text-blue-300" target="_blank" rel="noopener noreferrer">generate one at lab.stellar.org</a></li>
+                    </ul>
+
+                    <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-500">Installation</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">git clone https://github.com/nirmalplays/Stellar-x402.git
+cd Stellar-x402
+pip install -r requirements.txt</pre>
+
+                    <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-500">Configure environment</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">cp .env.example .env</pre>
+                    <p class="mt-3 text-sm text-slate-400">Then open <code class="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-200">.env</code> and fill in:</p>
+                    <div class="mt-4 overflow-x-auto rounded-lg border border-slate-800">
+                        <table class="w-full min-w-[520px] text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-900/80 text-slate-400">
+                                    <th class="px-4 py-2 font-medium">Variable</th>
+                                    <th class="px-4 py-2 font-medium">Required</th>
+                                    <th class="px-4 py-2 font-medium">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">DEPLOYER_PUBLIC_KEY</td><td class="px-4 py-2">✅</td><td class="px-4 py-2 text-slate-400">Stellar account that owns the registry contract</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">DEPLOYER_SECRET</td><td class="px-4 py-2">✅</td><td class="px-4 py-2 text-slate-400">Secret key for the deployer account</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">EXECUTOR_PUBLIC_KEY</td><td class="px-4 py-2">✅</td><td class="px-4 py-2 text-slate-400">Account that receives payments</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">EXECUTOR_SECRET</td><td class="px-4 py-2">✅</td><td class="px-4 py-2 text-slate-400">Secret key for the executor account</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">REGISTRY_CONTRACT_ID</td><td class="px-4 py-2">✅</td><td class="px-4 py-2 text-slate-400">Deployed Soroban registry contract ID</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">PUBLIC_BASE_URL</td><td class="px-4 py-2">✅</td><td class="px-4 py-2 text-slate-400">Your public URL — required for discovery</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">X402_FACILITATOR_URL</td><td class="px-4 py-2">❌</td><td class="px-4 py-2 text-slate-400">Default: <code class="text-slate-300">https://x402.org/facilitator</code></td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">X402_PRICE</td><td class="px-4 py-2">❌</td><td class="px-4 py-2 text-slate-400">Price per job in USDC. Default: <code class="text-slate-300">0.01</code></td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">REGISTRY_BYPASS_DEV</td><td class="px-4 py-2">❌</td><td class="px-4 py-2 text-slate-400">Set <code class="text-slate-300">true</code> for local dev without a contract</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-500">Run the server</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto"># Direct
+python -m uvicorn api.main:app --host 0.0.0.0 --port 8000
+
+# Docker Compose
+docker compose up --build</pre>
+                    <p class="mt-3 text-sm text-slate-400">Dashboard: <code class="rounded bg-slate-800 px-1.5 text-slate-200">http://localhost:8000/</code> · Marketing: <code class="rounded bg-slate-800 px-1.5 text-slate-200">/home</code></p>
+                </section>
+
+                <!-- 2 -->
+                <section id="authentication-payment" class="scroll-mt-28 border-t border-slate-800 pt-16">
+                    <h2 class="text-xl font-bold text-white">Authentication &amp; Payment</h2>
+                    <blockquote class="mt-4 border-l-2 border-blue-500 pl-4 text-sm italic text-slate-400">Payment <span class="not-italic font-semibold text-slate-300">is</span> authorization. No API key needed.</blockquote>
+                    <p class="mt-4 text-sm leading-relaxed text-slate-400">Every request to <code class="mono text-xs text-blue-300">/execute</code> or <code class="mono text-xs text-blue-300">/execute/stream</code> must include a payment header. The server verifies payment before running any job.</p>
+
+                    <h3 class="mt-8 text-sm font-semibold text-white">Option A — x402 v2 (USDC, recommended)</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">POST /execute/stream
+Header: X-Payment: &lt;PaymentPayload JSON&gt;</pre>
+                    <p class="mt-3 text-sm font-medium text-slate-300">Facilitator options</p>
+                    <div class="mt-2 overflow-x-auto rounded-lg border border-slate-800">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-900/80 text-slate-400">
+                                    <th class="px-4 py-2 font-medium">Facilitator</th>
+                                    <th class="px-4 py-2 font-medium">Network</th>
+                                    <th class="px-4 py-2 font-medium">API key needed</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td class="mono px-4 py-2 text-xs">https://x402.org/facilitator</td><td class="px-4 py-2 text-slate-400">Testnet</td><td class="px-4 py-2">No</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs break-all">https://channels.openzeppelin.com/x402/testnet</td><td class="px-4 py-2 text-slate-400">Testnet + Mainnet</td><td class="px-4 py-2">Yes</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="mt-3 text-sm text-slate-400"><strong class="text-slate-300">Compatible wallets:</strong> Freighter, Albedo, Hana, HOT, Klever, OneKey</p>
+
+                    <h3 class="mt-8 text-sm font-semibold text-white">Option B — Legacy XLM</h3>
+                    <p class="mt-2 text-sm text-slate-400">Send <strong class="text-slate-200">0.05 XLM</strong> directly to <code class="mono text-xs text-blue-300">EXECUTOR_PUBLIC_KEY</code>, then pass the transaction hash:</p>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">POST /execute/stream
+Header: X-Stellar-Payment-Tx: &lt;transaction_hash&gt;</pre>
+                    <p class="mt-4 text-sm text-slate-400">Prepare an unsigned transaction first:</p>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">POST /api/x402/prepare-payment
+Content-Type: application/json
+
+{ "source_public_key": "G..." }</pre>
+                </section>
+
+                <!-- 3 -->
+                <section id="api-reference" class="scroll-mt-28 border-t border-slate-800 pt-16">
+                    <h2 class="text-xl font-bold text-white">API Reference</h2>
+                    <div class="mt-6 overflow-x-auto rounded-lg border border-slate-800">
+                        <table class="w-full min-w-[640px] text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-900/80 text-slate-400">
+                                    <th class="px-4 py-2 font-medium">Method</th>
+                                    <th class="px-4 py-2 font-medium">Endpoint</th>
+                                    <th class="px-4 py-2 font-medium">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td class="mono px-4 py-2 text-xs text-emerald-400">POST</td><td class="mono px-4 py-2 text-xs">/execute/stream</td><td class="px-4 py-2 text-slate-400">SSE streaming execution — primary method</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-emerald-400">POST</td><td class="mono px-4 py-2 text-xs">/execute</td><td class="px-4 py-2 text-slate-400">Single JSON response for non-SSE clients</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-sky-400">GET</td><td class="mono px-4 py-2 text-xs">/.well-known/x402</td><td class="px-4 py-2 text-slate-400">x402 payment discovery (redirects to <code class="text-slate-300">/api/discovery</code>)</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-sky-400">GET</td><td class="mono px-4 py-2 text-xs">/.well-known/agent-card.json</td><td class="px-4 py-2 text-slate-400">A2A Agent Card (503 if <code class="text-slate-300">PUBLIC_BASE_URL</code> unset)</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-sky-400">GET</td><td class="mono px-4 py-2 text-xs">/.well-known/agent-registration.json</td><td class="px-4 py-2 text-slate-400">EIP-8004 registration (503 if contract / URL unset)</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-emerald-400">POST</td><td class="mono px-4 py-2 text-xs">/message:send</td><td class="px-4 py-2 text-slate-400">A2A HTTP+JSON SendMessage</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-emerald-400">POST</td><td class="mono px-4 py-2 text-xs">/a2a/jsonrpc</td><td class="px-4 py-2 text-slate-400">A2A JSON-RPC (SendMessage, GetTask, ListTasks, CancelTask)</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-sky-400">GET</td><td class="mono px-4 py-2 text-xs">/tasks/{id}</td><td class="px-4 py-2 text-slate-400">Fetch a specific A2A task</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-sky-400">GET</td><td class="mono px-4 py-2 text-xs">/tasks</td><td class="px-4 py-2 text-slate-400">List all A2A tasks (in-memory)</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-sky-400">GET</td><td class="mono px-4 py-2 text-xs">/api/discovery</td><td class="px-4 py-2 text-slate-400">Agent card + x402 hints</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-sky-400">GET</td><td class="mono px-4 py-2 text-xs">/api/discovery/resolved</td><td class="px-4 py-2 text-slate-400">Merged on-chain + IPFS metadata</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-sky-400">GET</td><td class="mono px-4 py-2 text-xs">/api/vault</td><td class="px-4 py-2 text-slate-400">Wallet balances + transaction history</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-sky-400">GET</td><td class="mono px-4 py-2 text-xs">/api/activity</td><td class="px-4 py-2 text-slate-400">Live event feed</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-emerald-400">POST</td><td class="mono px-4 py-2 text-xs">/api/pay</td><td class="px-4 py-2 text-slate-400">Dev only — auto-send 0.05 XLM</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="mt-4 text-sm text-slate-500">Interactive schema: <a href="/docs" class="text-blue-400 hover:underline">OpenAPI docs</a> · <a href="/redoc" class="text-blue-400 hover:underline">ReDoc</a></p>
+                </section>
+
+                <!-- 4 -->
+                <section id="execution" class="scroll-mt-28 border-t border-slate-800 pt-16">
+                    <h2 class="text-xl font-bold text-white">Execution</h2>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Basic request body</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">{
+  "agent_id": "agent_402",
+  "task": "Run the container and print output",
+  "input": {},
+  "image": "python:3.11-slim",
+  "cmd": "python -c \"print(2+2)\""
+}</pre>
+                    <p class="mt-2 text-xs text-slate-500">The API model requires <code class="text-slate-400">input</code> (use <code class="text-slate-400">{}</code> if empty). Optional validation flags go under <code class="text-slate-400">input</code> (e.g. <code class="text-slate-400">expected_substring</code>).</p>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Full request (common fields)</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">{
+  "agent_id": "agent_402",
+  "task": "Describe what this run must accomplish",
+  "input": {
+    "expected_substring": "done"
+  },
+  "image": "python:3.11-slim",
+  "cmd": "python -c \"print('done')\"",
+  "network_enabled": false,
+  "secrets": {
+    "MY_API_KEY": "sk-123..."
+  }
+}</pre>
+
+                    <div class="mt-6 overflow-x-auto rounded-lg border border-slate-800">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-900/80 text-slate-400">
+                                    <th class="px-4 py-2 font-medium">Field</th>
+                                    <th class="px-4 py-2 font-medium">Type</th>
+                                    <th class="px-4 py-2 font-medium">Req</th>
+                                    <th class="px-4 py-2 font-medium">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td class="mono px-4 py-2 text-xs">agent_id</td><td class="px-4 py-2">string</td><td class="px-4 py-2">✅</td><td class="px-4 py-2 text-slate-400">Registered Soroban agent ID</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">task</td><td class="px-4 py-2">string</td><td class="px-4 py-2">✅</td><td class="px-4 py-2 text-slate-400">Task description (AI validation + signed)</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">input</td><td class="px-4 py-2">object</td><td class="px-4 py-2">✅</td><td class="px-4 py-2 text-slate-400">May include <code class="text-slate-300">expected_substring</code> and other validators</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">image</td><td class="px-4 py-2">string?</td><td class="px-4 py-2">❌*</td><td class="px-4 py-2 text-slate-400">Docker image; omit / <code class="text-slate-300">auto</code> → server infers allowlisted image from task + cmd</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">cmd</td><td class="px-4 py-2">string</td><td class="px-4 py-2">✅</td><td class="px-4 py-2 text-slate-400">Command inside the container</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">network_enabled</td><td class="px-4 py-2">boolean</td><td class="px-4 py-2">❌</td><td class="px-4 py-2 text-slate-400">Default <code class="text-slate-300">false</code>. <code class="text-slate-300">true</code> for browser / outbound HTTP</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">secrets</td><td class="px-4 py-2">object</td><td class="px-4 py-2">❌</td><td class="px-4 py-2 text-slate-400">Env vars for the container; stripped from signed result</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="mt-2 text-xs text-slate-500">* Image is optional when auto-selection is enabled (dashboard default).</p>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Success response</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">{
+  "job_id": "abc-123",
+  "status": "completed",
+  "output": "4\n",
+  "verified": true,
+  "signature": "ed25519...",
+  "pubkey": "GXXX...",
+  "validation_strategy": "deterministic",
+  "validation_reason": "Output contains expected substring",
+  "signed_payload": { },
+  "timestamp": "2026-04-12T10:00:00Z",
+  "executor_agent": "openclaw"
+}</pre>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Status values</h3>
+                    <div class="mt-3 overflow-x-auto rounded-lg border border-slate-800">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-900/80 text-slate-400">
+                                    <th class="px-4 py-2 font-medium">Status</th>
+                                    <th class="px-4 py-2 font-medium">Meaning</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td class="mono px-4 py-2 text-xs">completed</td><td class="px-4 py-2 text-slate-400">Job finished, output validated</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">failed</td><td class="px-4 py-2 text-slate-400">Job ran but validation did not pass</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">timeout</td><td class="px-4 py-2 text-slate-400">Container exceeded time limit</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">canceled</td><td class="px-4 py-2 text-slate-400">Canceled by client when supported</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Streaming (SSE)</h3>
+                    <p class="mt-2 text-sm text-slate-400">Use <code class="mono text-xs text-blue-300">/execute/stream</code>. Each <code class="text-slate-300">data:</code> line is a JSON object.</p>
+                    <ul class="mt-3 list-inside list-disc space-y-2 text-sm text-slate-400">
+                        <li><strong class="text-slate-300">Log lines:</strong> <code class="mono text-xs text-slate-300">{"line": "..."}</code> — stdout and status messages.</li>
+                        <li><strong class="text-slate-300">Mid-run:</strong> optional objects such as <code class="mono text-xs text-slate-300">{"job_id": "...", "phase": "job_accepted"}</code>.</li>
+                        <li><strong class="text-slate-300">Terminal result:</strong> full <code class="mono text-xs text-slate-300">JobResult</code> JSON with <code class="text-slate-300">job_id</code>, <code class="text-slate-300">status</code>, <code class="text-slate-300">signature</code>, etc.</li>
+                    </ul>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">data: {"line": "Task started..."}
+
+data: {"job_id":"…","status":"completed","verified":true,...}</pre>
+
+                    <h3 class="mt-10 text-sm font-semibold text-white" id="browser-automation">Browser automation (Playwright)</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">{
+  "image": "mcr.microsoft.com/playwright/python:v1.45.0-jammy",
+  "cmd": "python3 script.py",
+  "network_enabled": true
+}</pre>
+                    <p class="mt-3 text-sm text-slate-400">Memory limit is raised to <strong class="text-slate-200">512MB</strong> when <code class="mono text-xs text-slate-300">network_enabled: true</code> or when the image name contains <code class="mono text-xs text-slate-300">playwright</code>.</p>
+                </section>
+
+                <!-- 6 / 8004 -->
+                <section id="agent-identity" class="scroll-mt-28 border-t border-slate-800 pt-16">
+                    <h2 class="text-xl font-bold text-white">Agent Identity (EIP-8004)</h2>
+                    <h3 class="mt-6 text-sm font-semibold text-slate-300">Discovery endpoints</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">GET /.well-known/agent-card.json         → A2A Agent Card
+GET /.well-known/agent-registration.json → EIP-8004 registration</pre>
+                    <p class="mt-3 text-sm text-slate-400">Both return <strong class="text-amber-200">503</strong> if required env vars are not set (<code class="mono text-xs">PUBLIC_BASE_URL</code>, <code class="mono text-xs">REGISTRY_CONTRACT_ID</code> for registration). Nothing is fabricated.</p>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Soroban identity format</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">agentRegistry: stellar:{NETWORK}:{REGISTRY_CONTRACT_ID}
+agentId: agent_402   ← Soroban string ID, not an ERC-721 tokenId</pre>
+                </section>
+
+                <!-- 7 A2A -->
+                <section id="a2a-protocol" class="scroll-mt-28 border-t border-slate-800 pt-16">
+                    <h2 class="text-xl font-bold text-white">A2A Protocol</h2>
+
+                    <h3 class="mt-6 text-sm font-semibold text-slate-300">Send a task (HTTP+JSON)</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">POST /message:send
+Header: X-Payment: &lt;payment&gt;
+Content-Type: application/json
+
+{
+  "agent_id": "agent_402",
+  "task": "docker",
+  "input": {
+    "image": "python:3.11",
+    "cmd": "print(2+2)"
+  }
+}</pre>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">JSON-RPC</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">POST /a2a/jsonrpc
+
+Methods: SendMessage | GetTask | ListTasks | CancelTask</pre>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Limitations</h3>
+                    <ul class="mt-3 list-inside list-disc space-y-2 text-sm text-slate-400">
+                        <li>Tasks are stored <strong class="text-slate-300">in-memory only</strong> — lost on restart.</li>
+                        <li><code class="mono text-xs text-slate-300">SendStreamingMessage</code> and push notifications are <strong class="text-slate-300">not</strong> implemented — use <code class="mono text-xs text-blue-300">/execute/stream</code> for native SSE.</li>
+                        <li>In-flight cancel is not implemented.</li>
+                    </ul>
+                </section>
+
+                <!-- 8 Validation -->
+                <section id="validation" class="scroll-mt-28 border-t border-slate-800 pt-16">
+                    <h2 class="text-xl font-bold text-white">Validation</h2>
+                    <p class="mt-3 text-sm text-slate-400">Strategies are chosen from your request and output:</p>
+                    <div class="mt-4 overflow-x-auto rounded-lg border border-slate-800">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-900/80 text-slate-400">
+                                    <th class="px-4 py-2 font-medium">Strategy</th>
+                                    <th class="px-4 py-2 font-medium">Trigger</th>
+                                    <th class="px-4 py-2 font-medium">How it works</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td class="mono px-4 py-2 text-xs">deterministic</td><td class="px-4 py-2 text-slate-400"><code class="text-slate-300">expected_substring</code> in <code class="text-slate-300">input</code></td><td class="px-4 py-2 text-slate-400">Substring must appear in stdout</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">rule_based</td><td class="px-4 py-2 text-slate-400">No substring; rules apply</td><td class="px-4 py-2 text-slate-400">Checks patterns such as <code class="text-slate-300">[ERROR]</code> / <code class="text-slate-300">[TIMEOUT]</code></td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">ai_based</td><td class="px-4 py-2 text-slate-400">When AI validation is enabled</td><td class="px-4 py-2 text-slate-400">LLM evaluates stdout vs task description</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 9 Registry -->
+                <section id="on-chain-registry" class="scroll-mt-28 border-t border-slate-800 pt-16">
+                    <h2 class="text-xl font-bold text-white">On-Chain Registry</h2>
+
+                    <h3 class="mt-6 text-sm font-semibold text-slate-300">Deploy the contract</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">cd contracts/registry
+stellar contract deploy \
+  --wasm target/wasm32-unknown-unknown/release/registry.wasm \
+  --network testnet</pre>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Register your agent</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">python scripts/registry_client.py</pre>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Publish metadata to IPFS (optional)</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto"># Set PINATA_JWT in .env first
+python scripts/publish_agent_metadata_ipfs.py</pre>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Agent struct (Rust / Soroban)</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">pub struct Agent {
+    pub owner: Address,
+    pub metadata_cid: String,   // IPFS CID
+    pub reputation: i64,
+    pub active: bool,
+}</pre>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Agent metadata schema (IPFS)</h3>
+                    <pre class="mt-3 rounded-lg border border-slate-800 bg-[#0a0f18] p-4 text-xs mono text-slate-300 overflow-x-auto">{
+  "name": "Executor Agent",
+  "version": "1.0",
+  "protocols": ["x402", "8004", "A2A"],
+  "endpoint": "https://your-url/execute/stream",
+  "capabilities": [
+    {
+      "name": "docker",
+      "price": "0.05 XLM",
+      "input_schema": { "image": "string", "cmd": "string" }
+    }
+  ],
+  "verification": {
+    "type": "ed25519",
+    "public_key": "GXXX..."
+  }
+}</pre>
+                </section>
+
+                <!-- 10 Security -->
+                <section id="security-model" class="scroll-mt-28 border-t border-slate-800 pt-16">
+                    <h2 class="text-xl font-bold text-white">Security Model</h2>
+
+                    <h3 class="mt-6 text-sm font-semibold text-slate-300">Docker sandbox limits</h3>
+                    <div class="mt-3 overflow-x-auto rounded-lg border border-slate-800">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-900/80 text-slate-400">
+                                    <th class="px-4 py-2 font-medium">Constraint</th>
+                                    <th class="px-4 py-2 font-medium">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td class="px-4 py-2">Network</td><td class="px-4 py-2 text-slate-400">Disabled by default</td></tr>
+                                <tr><td class="px-4 py-2">Memory</td><td class="px-4 py-2 text-slate-400">256MB (512MB for network jobs)</td></tr>
+                                <tr><td class="px-4 py-2">CPU</td><td class="px-4 py-2 text-slate-400">0.5 cores</td></tr>
+                                <tr><td class="px-4 py-2">Process limit</td><td class="px-4 py-2 text-slate-400">64</td></tr>
+                                <tr><td class="px-4 py-2">Filesystem</td><td class="px-4 py-2 text-slate-400">Read-only + tmpfs mounts</td></tr>
+                                <tr><td class="px-4 py-2">Privileges</td><td class="px-4 py-2 text-slate-400">No new privileges</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">tmpfs mounts</h3>
+                    <div class="mt-3 overflow-x-auto rounded-lg border border-slate-800">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-900/80 text-slate-400">
+                                    <th class="px-4 py-2 font-medium">Path</th>
+                                    <th class="px-4 py-2 font-medium">Size</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td class="mono px-4 py-2 text-xs">/tmp</td><td class="px-4 py-2 text-slate-400">256MB</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">/var/tmp</td><td class="px-4 py-2 text-slate-400">64MB</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs">/root/.cache</td><td class="px-4 py-2 text-slate-400">256MB</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="mt-8 text-sm font-semibold text-slate-300">Secrets handling</h3>
+                    <p class="mt-2 text-sm text-slate-400">Secrets are injected as environment variables into the container but are <strong class="text-slate-200">stripped from the signed result</strong> before returning to the caller.</p>
+                </section>
+
+                <!-- 11 Config -->
+                <section id="configuration-reference" class="scroll-mt-28 border-t border-slate-800 pt-16 pb-8">
+                    <h2 class="text-xl font-bold text-white">Configuration Reference</h2>
+                    <p class="mt-3 text-sm text-slate-400">See <code class="rounded bg-slate-800 px-1.5 mono text-xs text-slate-200">.env.example</code> in the repository for the full list. Additional variables:</p>
+                    <div class="mt-4 overflow-x-auto rounded-lg border border-slate-800">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-900/80 text-slate-400">
+                                    <th class="px-4 py-2 font-medium">Variable</th>
+                                    <th class="px-4 py-2 font-medium">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">DISABLE_AUTO_BROWSER</td><td class="px-4 py-2 text-slate-400">Set <code class="text-slate-300">true</code> to stop auto-opening the browser on startup</td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">BROWSER_OPEN_HOST</td><td class="px-4 py-2 text-slate-400">Host for auto-open URL. Default: <code class="text-slate-300">127.0.0.1</code></td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">PORT</td><td class="px-4 py-2 text-slate-400">Server port. Default: <code class="text-slate-300">8000</code></td></tr>
+                                <tr><td class="mono px-4 py-2 text-xs text-blue-300">PINATA_JWT</td><td class="px-4 py-2 text-slate-400">JWT for IPFS metadata publishing via Pinata</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </article>
+        </main>
+    </div>
+</body>
+</html>

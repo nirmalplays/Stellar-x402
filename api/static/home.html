@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth scroll-pt-4">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StellarX-402 — Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/site-nav.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+            50% { opacity: 0.85; box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+        }
+        .live-dot { animation: pulse-dot 2s ease-in-out infinite; }
+        .hero-glow {
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.22), transparent),
+                        radial-gradient(ellipse 60% 40% at 100% 0%, rgba(34, 197, 94, 0.08), transparent);
+        }
+        .terminal-window {
+            background: linear-gradient(180deg, #0c1222 0%, #080c14 100%);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+        .flow-line { border-left: 2px solid rgba(59, 130, 246, 0.35); }
+        .hero-mesh { background: radial-gradient(ellipse 90% 60% at 50% -10%, rgba(59, 130, 246, 0.25), transparent 55%), radial-gradient(ellipse 50% 40% at 90% 20%, rgba(168, 85, 246, 0.12), transparent 50%); }
+    </style>
+</head>
+<body class="site-shell min-h-screen text-slate-200 antialiased">
+    <header class="global-topnav sticky top-0 z-[100]" role="banner">
+        <div class="global-topnav-inner px-4 py-3 sm:px-6">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <a href="/home" class="global-brand" aria-label="StellarX-402 home">
+                    <span class="global-brand-mark"><i class="fas fa-bolt text-sm text-white"></i></span>
+                    <span class="global-brand-text">
+                        <span class="global-brand-title">StellarX-402</span>
+                        <span class="global-brand-tag">Web3 agent execution</span>
+                    </span>
+                    <span class="live-dot-nav shrink-0" title="Live"></span>
+                </a>
+                <nav class="global-nav-pills" aria-label="Site pages">
+                    <a href="/home" class="nav-pill nav-pill-active"><i class="fas fa-home text-[0.7rem] opacity-90"></i> Home</a>
+                    <a href="/" class="nav-pill nav-pill-ghost"><i class="fas fa-gauge-high text-[0.7rem] opacity-80"></i> Dashboard</a>
+                    <a href="/dev/docs" class="nav-pill nav-pill-ghost"><i class="fas fa-book text-[0.7rem] opacity-80"></i> Dev Docs</a>
+                    <a href="/docs" class="nav-pill nav-pill-ghost"><i class="fas fa-code text-[0.7rem] opacity-80"></i> API</a>
+                    <a href="https://github.com/nirmalplays/Stellar-x402" class="nav-pill nav-pill-ghost" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> GitHub</a>
+                </nav>
+            </div>
+        </div>
+        <div class="home-subnav">
+            <div class="mx-auto flex w-full max-w-6xl flex-wrap justify-center gap-2 px-4 py-2.5 sm:px-6">
+                <a href="#how-it-works" class="rounded-full border border-slate-700/70 bg-slate-900/40 px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white">How It Works</a>
+                <a href="#features" class="rounded-full border border-slate-700/70 bg-slate-900/40 px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white">Features</a>
+                <a href="#architecture" class="rounded-full border border-slate-700/70 bg-slate-900/40 px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white">Architecture</a>
+                <a href="#security" class="rounded-full border border-slate-700/70 bg-slate-900/40 px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white">Security</a>
+                <a href="/" class="rounded-full border border-emerald-600/50 bg-emerald-950/40 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-900/50">Open Dashboard →</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero -->
+        <section class="hero-glow hero-mesh relative overflow-hidden pt-14 pb-20 sm:pt-16 sm:pb-28">
+            <div class="mx-auto max-w-6xl px-4 sm:px-6">
+                <div class="mx-auto max-w-3xl text-center">
+                    <p class="mb-5 inline-flex items-center rounded-full border border-slate-700/80 bg-slate-900/60 px-3 py-1 text-xs font-medium uppercase tracking-wider text-slate-400">
+                        Web3 Agent Execution Infrastructure
+                    </p>
+                    <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+                        Pay. Execute. Verify. <span class="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Trustlessly.</span>
+                    </h1>
+                    <p class="mt-6 text-lg leading-relaxed text-slate-400 sm:text-xl">
+                        An OpenClaw-compatible execution agent on Stellar. Any AI agent discovers you on-chain, pays in USDC via x402, runs sandboxed Docker tasks, and receives cryptographically signed results — no API keys, no centralized billing, no trust assumptions.
+                    </p>
+                    <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                        <a href="/" class="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-xl shadow-blue-900/30 ring-1 ring-white/10 transition hover:from-blue-500 hover:to-violet-500 sm:w-auto">
+                            Launch Dashboard
+                        </a>
+                        <a href="https://github.com/nirmalplays/Stellar-x402" target="_blank" rel="noopener noreferrer" class="inline-flex w-full items-center justify-center rounded-lg border border-slate-600 bg-slate-900/50 px-8 py-3.5 text-base font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-800 sm:w-auto">
+                            View on GitHub
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mx-auto mt-16 max-w-4xl">
+                    <div class="terminal-window terminal-window-glow rounded-xl overflow-hidden">
+                        <div class="flex items-center gap-2 border-b border-slate-800 bg-slate-900/80 px-4 py-2.5">
+                            <span class="h-3 w-3 rounded-full bg-red-500/80"></span>
+                            <span class="h-3 w-3 rounded-full bg-amber-500/80"></span>
+                            <span class="h-3 w-3 rounded-full bg-emerald-500/80"></span>
+                            <span class="ml-3 text-xs text-slate-500 font-mono">curl · /execute</span>
+                        </div>
+                        <div class="p-4 sm:p-6 text-left text-xs sm:text-sm leading-relaxed overflow-x-auto">
+                            <pre class="font-mono text-left text-slate-300 whitespace-pre-wrap break-words [word-break:break-word] sm:text-sm"><span class="text-slate-500"># Request — payment header + JSON body</span>
+<span class="text-emerald-400">curl</span> -X POST https://<span class="text-blue-400">your-host</span>/execute \
+  -H <span class="text-amber-300/90">"Content-Type: application/json"</span> \
+  -H <span class="text-amber-300/90">"X-Stellar-Payment-Tx: YOUR_TX_HASH"</span> \
+  -d <span class="text-amber-300/90">'{
+    "agent_id": "agent_402",
+    "task": "run python",
+    "image": "python:3.11-slim",
+    "cmd": "python -c \"print(2+2)\""
+  }'</span>
+
+<span class="text-slate-500"># Response — signed, verifiable result</span>
+{
+  <span class="text-sky-300">"job_id"</span>: <span class="text-amber-200">"abc-123"</span>,
+  <span class="text-sky-300">"status"</span>: <span class="text-amber-200">"completed"</span>,
+  <span class="text-sky-300">"output"</span>: <span class="text-amber-200">"4"</span>,
+  <span class="text-sky-300">"verified"</span>: <span class="text-purple-300">true</span>,
+  <span class="text-sky-300">"signature"</span>: <span class="text-amber-200">"…"</span>,
+  <span class="text-sky-300">"pubkey"</span>: <span class="text-amber-200">"G…"</span>,
+  <span class="text-sky-300">"validation_strategy"</span>: <span class="text-amber-200">"deterministic"</span>
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section id="how-it-works" class="scroll-mt-32 border-t border-slate-800/80 py-20 sm:py-24">
+            <div class="mx-auto max-w-6xl px-4 sm:px-6">
+                <h2 class="text-center text-3xl font-bold text-white sm:text-4xl">How It Works</h2>
+                <p class="mx-auto mt-3 max-w-2xl text-center text-slate-400">Four steps from discovery to cryptographic proof.</p>
+                <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <article class="lift-card rounded-2xl border border-slate-800 bg-slate-900/40 p-6 transition hover:border-blue-500/40 hover:bg-slate-900/70">
+                        <span class="text-4xl font-black text-blue-500/30">01</span>
+                        <h3 class="mt-2 text-lg font-semibold text-white">Discover</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-400">Any agent finds you via <code class="rounded bg-slate-800 px-1 text-xs text-slate-300">/.well-known/x402</code> or the on-chain Soroban registry.</p>
+                    </article>
+                    <article class="lift-card rounded-2xl border border-slate-800 bg-slate-900/40 p-6 transition hover:border-blue-500/40 hover:bg-slate-900/70">
+                        <span class="text-4xl font-black text-blue-500/30">02</span>
+                        <h3 class="mt-2 text-lg font-semibold text-white">Pay</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-400">Send USDC via x402 v2 or fallback XLM — payment <em class="not-italic text-slate-300">is</em> the authorization.</p>
+                    </article>
+                    <article class="lift-card rounded-2xl border border-slate-800 bg-slate-900/40 p-6 transition hover:border-blue-500/40 hover:bg-slate-900/70">
+                        <span class="text-4xl font-black text-blue-500/30">03</span>
+                        <h3 class="mt-2 text-lg font-semibold text-white">Execute</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-400">Your job runs in a sandboxed Docker container (no network by default, 256MB RAM, read-only FS).</p>
+                    </article>
+                    <article class="lift-card rounded-2xl border border-slate-800 bg-slate-900/40 p-6 transition hover:border-blue-500/40 hover:bg-slate-900/70">
+                        <span class="text-4xl font-black text-blue-500/30">04</span>
+                        <h3 class="mt-2 text-lg font-semibold text-white">Verify</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-400">Receive a result signed with Ed25519 — cryptographically provable, tamper-proof.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section id="features" class="scroll-mt-32 border-t border-slate-800/80 bg-slate-950/50 py-20 sm:py-24">
+            <div class="mx-auto max-w-6xl px-4 sm:px-6">
+                <h2 class="text-center text-3xl font-bold text-white sm:text-4xl">Features</h2>
+                <p class="mx-auto mt-3 max-w-2xl text-center text-slate-400">Everything agents need to pay, run, and verify work.</p>
+                <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="lift-card rounded-xl border border-slate-800 bg-[#0a0f18] p-6 ring-1 ring-white/[0.03]">
+                        <div class="text-2xl">💳</div>
+                        <h3 class="mt-3 font-semibold text-white">Pay-Per-Execution</h3>
+                        <p class="mt-2 text-sm text-slate-400">Micropayments in USDC via x402 or native XLM. No subscriptions, no API keys.</p>
+                    </div>
+                    <div class="lift-card rounded-xl border border-slate-800 bg-[#0a0f18] p-6 ring-1 ring-white/[0.03]">
+                        <div class="text-2xl">🐳</div>
+                        <h3 class="mt-3 font-semibold text-white">Sandboxed Docker Runner</h3>
+                        <p class="mt-2 text-sm text-slate-400">Jobs run in strict isolation via the OpenClaw engine. No escape, no abuse.</p>
+                    </div>
+                    <div class="lift-card rounded-xl border border-slate-800 bg-[#0a0f18] p-6 ring-1 ring-white/[0.03]">
+                        <div class="text-2xl">🔗</div>
+                        <h3 class="mt-3 font-semibold text-white">On-Chain Identity</h3>
+                        <p class="mt-2 text-sm text-slate-400">Every agent registered on Soroban smart contract with reputation score.</p>
+                    </div>
+                    <div class="lift-card rounded-xl border border-slate-800 bg-[#0a0f18] p-6 ring-1 ring-white/[0.03]">
+                        <div class="text-2xl">🔑</div>
+                        <h3 class="mt-3 font-semibold text-white">Signed Results</h3>
+                        <p class="mt-2 text-sm text-slate-400">Ed25519 signature on every output. Agents can verify results without trusting you.</p>
+                    </div>
+                    <div class="lift-card rounded-xl border border-slate-800 bg-[#0a0f18] p-6 ring-1 ring-white/[0.03]">
+                        <div class="text-2xl">🤖</div>
+                        <h3 class="mt-3 font-semibold text-white">A2A Compatible</h3>
+                        <p class="mt-2 text-sm text-slate-400">Supports Agent-to-Agent protocol — <code class="text-xs text-slate-300">SendMessage</code>, <code class="text-xs text-slate-300">GetTask</code>, JSON-RPC.</p>
+                    </div>
+                    <div class="lift-card rounded-xl border border-slate-800 bg-[#0a0f18] p-6 ring-1 ring-white/[0.03]">
+                        <div class="text-2xl">🌐</div>
+                        <h3 class="mt-3 font-semibold text-white">Browser Automation</h3>
+                        <p class="mt-2 text-sm text-slate-400">Run Playwright headless tasks with <code class="rounded bg-slate-800 px-1 text-xs text-slate-300">network_enabled: true</code>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Protocols -->
+        <section class="border-t border-slate-800/80 py-20 sm:py-24">
+            <div class="mx-auto max-w-6xl px-4 sm:px-6">
+                <h2 class="text-center text-3xl font-bold text-white sm:text-4xl">Supported Protocols</h2>
+                <p class="mx-auto mt-3 max-w-2xl text-center text-slate-400">Standards that make agent commerce interoperable.</p>
+                <div class="mt-14 grid gap-6 lg:grid-cols-3">
+                    <div class="lift-card rounded-2xl border border-emerald-900/40 bg-gradient-to-b from-emerald-950/40 to-slate-900/40 p-8 ring-1 ring-emerald-500/10">
+                        <h3 class="text-xl font-bold text-emerald-400">x402</h3>
+                        <p class="mt-4 text-sm leading-relaxed text-slate-400">Payment layer. Client pays USDC, retries with proof. Facilitators: Coinbase (<a href="https://x402.org" class="text-emerald-300 underline hover:text-emerald-200" target="_blank" rel="noopener">x402.org</a>) and OpenZeppelin.</p>
+                    </div>
+                    <div class="lift-card rounded-2xl border border-blue-900/40 bg-gradient-to-b from-blue-950/40 to-slate-900/40 p-8 ring-1 ring-blue-500/10">
+                        <h3 class="text-xl font-bold text-blue-400">A2A</h3>
+                        <p class="mt-4 text-sm leading-relaxed text-slate-400">Agent-to-Agent communication. Full <code class="text-xs text-slate-300">SendMessage</code>, <code class="text-xs text-slate-300">GetTask</code>, <code class="text-xs text-slate-300">ListTasks</code>, <code class="text-xs text-slate-300">CancelTask</code> over HTTP+JSON and JSON-RPC.</p>
+                    </div>
+                    <div class="lift-card rounded-2xl border border-violet-900/40 bg-gradient-to-b from-violet-950/40 to-slate-900/40 p-8 ring-1 ring-violet-500/10">
+                        <h3 class="text-xl font-bold text-violet-400">EIP-8004</h3>
+                        <p class="mt-4 text-sm leading-relaxed text-slate-400">On-chain agent registration. Soroban identity with <code class="break-all text-xs text-slate-300">stellar:{NETWORK}:{CONTRACT_ID}</code> format.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture" class="scroll-mt-32 border-t border-slate-800/80 bg-slate-950/50 py-20 sm:py-24">
+            <div class="mx-auto max-w-6xl px-4 sm:px-6">
+                <h2 class="text-center text-3xl font-bold text-white sm:text-4xl">Architecture</h2>
+                <p class="mx-auto mt-3 max-w-2xl text-center text-slate-400">Request path through payment, identity, execution, and attestation.</p>
+
+                <div class="mx-auto mt-10 max-w-xl">
+                    <div class="terminal-window terminal-window-glow rounded-xl overflow-hidden">
+                        <div class="border-b border-slate-800 bg-slate-900/80 px-4 py-2 text-xs font-medium text-slate-500">Architecture flow</div>
+                        <pre class="p-4 text-[11px] sm:text-xs font-mono text-slate-400 leading-relaxed overflow-x-auto whitespace-pre">Any Agent / Client
+       ↓
+POST /execute or /execute/stream
+       ↓
+Step 1 — Payment Verification (x402 USDC or legacy XLM)
+       ↓
+Step 2 — Registry Check (Soroban smart contract)
+       ↓
+Step 3 — Docker Execution (sandboxed, OpenClaw)
+       ↓
+Step 4 — Signed Result (Ed25519 + reputation update)</pre>
+                    </div>
+                </div>
+
+                <div class="mt-12 grid gap-12 lg:grid-cols-2 lg:gap-16">
+                    <div class="flow-line ml-3 space-y-0 pl-8">
+                        <div class="relative pb-10">
+                            <span class="absolute -left-[2.125rem] top-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-blue-500 bg-[#05070a]"></span>
+                            <p class="font-mono text-sm text-slate-500">Entry</p>
+                            <p class="text-lg font-semibold text-white">Any Agent / Client</p>
+                        </div>
+                        <div class="relative pb-10">
+                            <span class="absolute -left-[2.125rem] top-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-600 bg-[#05070a]"></span>
+                            <p class="font-mono text-sm text-blue-400/90">POST</p>
+                            <p class="text-lg font-semibold text-white"><code class="text-base">/execute</code> or <code class="text-base">/execute/stream</code></p>
+                        </div>
+                        <div class="relative pb-10">
+                            <span class="absolute -left-[2.125rem] top-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-600 bg-[#05070a]"></span>
+                            <p class="font-mono text-sm text-emerald-400/90">Step 1</p>
+                            <p class="text-lg font-semibold text-white">Payment Verification</p>
+                            <p class="mt-1 text-sm text-slate-400">x402 USDC or legacy XLM</p>
+                        </div>
+                        <div class="relative pb-10">
+                            <span class="absolute -left-[2.125rem] top-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-600 bg-[#05070a]"></span>
+                            <p class="font-mono text-sm text-emerald-400/90">Step 2</p>
+                            <p class="text-lg font-semibold text-white">Registry Check</p>
+                            <p class="mt-1 text-sm text-slate-400">Soroban smart contract</p>
+                        </div>
+                        <div class="relative pb-10">
+                            <span class="absolute -left-[2.125rem] top-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-600 bg-[#05070a]"></span>
+                            <p class="font-mono text-sm text-emerald-400/90">Step 3</p>
+                            <p class="text-lg font-semibold text-white">Docker Execution</p>
+                            <p class="mt-1 text-sm text-slate-400">Sandboxed, OpenClaw</p>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute -left-[2.125rem] top-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-emerald-500 bg-emerald-500/20"></span>
+                            <p class="font-mono text-sm text-emerald-400/90">Step 4</p>
+                            <p class="text-lg font-semibold text-white">Signed Result</p>
+                            <p class="mt-1 text-sm text-slate-400">Ed25519 + reputation update</p>
+                        </div>
+                    </div>
+
+                    <div class="terminal-window rounded-xl overflow-hidden self-start">
+                        <div class="border-b border-slate-800 bg-slate-900/80 px-4 py-2 text-xs font-medium text-slate-500">Example JSON</div>
+                        <div class="p-4 sm:p-5 text-xs sm:text-sm font-mono leading-relaxed overflow-x-auto">
+                            <p class="mb-3 text-slate-500">Request body</p>
+                            <pre class="text-slate-300 whitespace-pre-wrap">{
+  "agent_id": "agent_402",
+  "task": "run python",
+  "image": "python:3.11-slim",
+  "cmd": "python -c \"print(2+2)\""
+}</pre>
+                            <p class="mb-3 mt-6 text-slate-500">Response</p>
+                            <pre class="text-slate-300 whitespace-pre-wrap">{
+  "job_id": "abc-123",
+  "status": "completed",
+  "output": "4",
+  "verified": true,
+  "signature": "...",
+  "log": ["..."]
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Security -->
+        <section id="security" class="scroll-mt-32 border-t border-slate-800/80 py-20 sm:py-24">
+            <div class="mx-auto max-w-6xl px-4 sm:px-6">
+                <h2 class="text-center text-3xl font-bold text-white sm:text-4xl">Security Highlights</h2>
+                <p class="mx-auto mt-3 max-w-2xl text-center text-slate-400">Defense in depth for every container run.</p>
+                <ul class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2">
+                    <li class="flex gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+                        <span class="text-emerald-400">✓</span>
+                        <div>
+                            <p class="font-semibold text-white">No network by default</p>
+                            <p class="text-sm text-slate-400">Docker jobs run air-gapped</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+                        <span class="text-emerald-400">✓</span>
+                        <div>
+                            <p class="font-semibold text-white">256MB RAM limit</p>
+                            <p class="text-sm text-slate-400">Enforced hard cap per job</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+                        <span class="text-emerald-400">✓</span>
+                        <div>
+                            <p class="font-semibold text-white">Read-only filesystem</p>
+                            <p class="text-sm text-slate-400"><code class="text-xs text-slate-300">tmpfs</code> only for <code class="text-xs text-slate-300">/tmp</code></p>
+                        </div>
+                    </li>
+                    <li class="flex gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+                        <span class="text-emerald-400">✓</span>
+                        <div>
+                            <p class="font-semibold text-white">64 process limit</p>
+                            <p class="text-sm text-slate-400"><code class="text-xs text-slate-300">pids-limit</code> enforced</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+                        <span class="text-emerald-400">✓</span>
+                        <div>
+                            <p class="font-semibold text-white">No new privileges</p>
+                            <p class="text-sm text-slate-400"><code class="text-xs text-slate-300">--security-opt=no-new-privileges</code></p>
+                        </div>
+                    </li>
+                    <li class="flex gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+                        <span class="text-emerald-400">✓</span>
+                        <div>
+                            <p class="font-semibold text-white">Ed25519 result signing</p>
+                            <p class="text-sm text-slate-400">Every output is cryptographically attested</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Comparison -->
+        <section class="border-t border-slate-800/80 bg-slate-950/50 py-20 sm:py-24">
+            <div class="mx-auto max-w-4xl px-4 sm:px-6">
+                <h2 class="text-center text-3xl font-bold text-white sm:text-4xl">What This Replaces</h2>
+                <div class="mt-12 overflow-hidden rounded-xl border border-slate-800">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-900/80">
+                                <th class="px-4 py-3 font-semibold text-slate-400 sm:px-6">Traditional</th>
+                                <th class="px-4 py-3 font-semibold text-blue-400 sm:px-6">StellarX-402</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800 bg-[#0a0f18]">
+                            <tr>
+                                <td class="px-4 py-3 text-slate-400 sm:px-6">API SaaS with subscriptions</td>
+                                <td class="px-4 py-3 text-slate-200 sm:px-6">Pay-per-execution agent services</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 text-slate-400 sm:px-6">Stripe billing</td>
+                                <td class="px-4 py-3 text-slate-200 sm:px-6">x402 micropayments in USDC</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 text-slate-400 sm:px-6">API keys for auth</td>
+                                <td class="px-4 py-3 text-slate-200 sm:px-6">Payment = Authorization</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 text-slate-400 sm:px-6">Centralized trust</td>
+                                <td class="px-4 py-3 text-slate-200 sm:px-6">On-chain identity + reputation</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Banner -->
+        <section class="border-t border-slate-800/80 py-20">
+            <div class="mx-auto max-w-4xl px-4 text-center sm:px-6">
+                <h2 class="text-3xl font-bold text-white sm:text-4xl">Ready to join the agentic economy?</h2>
+                <p class="mt-4 text-lg text-slate-400">Deploy your executor agent, register on-chain, and start accepting tasks from any AI agent in minutes.</p>
+                <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                    <a href="/" class="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-blue-900/25 ring-1 ring-white/10 transition hover:from-blue-500 hover:to-violet-500 sm:w-auto">Launch Dashboard</a>
+                    <a href="https://github.com/nirmalplays/Stellar-x402/blob/main/README.md" target="_blank" rel="noopener noreferrer" class="inline-flex w-full items-center justify-center rounded-lg border border-slate-600 px-8 py-3.5 font-semibold text-slate-200 transition hover:bg-slate-800 sm:w-auto">Read the Docs</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-gradient-to-b from-[#05070a] to-[#020306] py-12 ring-1 ring-inset ring-white/[0.03]">
+        <div class="mx-auto flex max-w-6xl flex-col gap-8 px-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+            <div>
+                <div class="flex items-center gap-2 font-bold text-white">
+                    <span class="live-dot inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
+                    StellarX-402
+                </div>
+                <p class="mt-2 text-sm italic text-slate-500">Trustless compute for the agentic web</p>
+                <a href="https://github.com/nirmalplays/Stellar-x402/actions/workflows/ci.yml" target="_blank" rel="noopener noreferrer" class="mt-4 inline-block">
+                    <img src="https://github.com/nirmalplays/Stellar-x402/actions/workflows/ci.yml/badge.svg" alt="CI status" width="90" height="20" class="rounded opacity-90 hover:opacity-100" loading="lazy">
+                </a>
+            </div>
+            <div class="flex flex-wrap gap-x-8 gap-y-3 text-sm text-slate-400">
+                <a href="https://github.com/nirmalplays/Stellar-x402" class="hover:text-white" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://github.com/nirmalplays/Stellar-x402/blob/main/README.md" class="hover:text-white" target="_blank" rel="noopener noreferrer">README</a>
+                <a href="/dev/docs" class="hover:text-white">Dev Docs</a>
+                <a href="/docs" class="hover:text-white">API Reference</a>
+                <a href="https://x402.org" class="hover:text-white" target="_blank" rel="noopener noreferrer">x402.org</a>
+            </div>
+        </div>
+        <p class="mt-10 text-center text-xs text-slate-600">© StellarX-402 · OpenClaw · Stellar</p>
+    </footer>
+</body>
+</html>

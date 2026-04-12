@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StellarX-402 — API Reference (Swagger)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/site-nav.css">
+    <style>
+        html, body { height: 100%; margin: 0; }
+        .swagger-frame { flex: 1 1 auto; min-height: 0; width: 100%; border: 0; background: #fafafa; }
+    </style>
+</head>
+<body class="site-shell flex h-screen min-h-0 flex-col overflow-hidden text-slate-200 antialiased">
+    <header class="global-topnav z-[100] shrink-0 shadow-lg" role="banner">
+        <div class="global-topnav-inner px-4 py-3 sm:px-6">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <a href="/home" class="global-brand min-w-0" aria-label="StellarX-402 home">
+                    <span class="global-brand-mark shrink-0"><i class="fas fa-bolt text-sm text-white"></i></span>
+                    <span class="global-brand-text min-w-0 text-left">
+                        <span class="global-brand-title">StellarX-402</span>
+                        <span class="global-brand-tag">OpenAPI · Swagger</span>
+                    </span>
+                </a>
+                <nav class="global-nav-pills" aria-label="Site pages">
+                    <a href="/home" class="nav-pill nav-pill-ghost"><i class="fas fa-home text-[0.7rem] opacity-80"></i> Home</a>
+                    <a href="/" class="nav-pill nav-pill-ghost"><i class="fas fa-gauge-high text-[0.7rem] opacity-80"></i> Dashboard</a>
+                    <a href="/dev/docs" class="nav-pill nav-pill-ghost"><i class="fas fa-book text-[0.7rem] opacity-80"></i> Dev Docs</a>
+                    <a href="/docs" class="nav-pill nav-pill-active"><i class="fas fa-code text-[0.7rem] opacity-90"></i> API</a>
+                    <a href="https://github.com/nirmalplays/Stellar-x402" class="nav-pill nav-pill-ghost" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> GitHub</a>
+                </nav>
+            </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/60 bg-slate-950/70 px-4 py-2.5 text-xs sm:px-6">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <button type="button" onclick="history.length > 1 ? history.back() : (location.href='/')" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-600 bg-slate-900/80 px-3 py-1.5 font-medium text-slate-200 hover:border-blue-500/50 hover:bg-slate-800 hover:text-white">
+                    <i class="fas fa-arrow-left text-[10px] opacity-80"></i> Go back
+                </button>
+                <a href="/" class="inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-blue-400 hover:text-blue-300"><i class="fas fa-terminal text-[10px]"></i> Dashboard</a>
+                <a href="/home" class="inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-slate-400 hover:text-white"><i class="fas fa-compass text-[10px]"></i> Home</a>
+            </div>
+            <a href="/_swagger/ui" target="_blank" rel="noopener noreferrer" class="shrink-0 text-slate-500 hover:text-slate-300"><i class="fas fa-up-right-from-square mr-1 text-[10px]"></i> Full-screen API</a>
+        </div>
+    </header>
+
+    <iframe class="swagger-frame" title="Swagger UI" src="/_swagger/ui"></iframe>
+</body>
+</html>

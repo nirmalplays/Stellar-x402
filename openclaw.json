@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "servers": {
+      "stellar-x402-executor": {
+        "command": "python",
+        "args": ["-m", "openclaw_mcp"],
+        "cwd": "C:\\Users\\Administrator\\Downloads\\Stellar-x402-main (6)\\Stellar-x402-main",
+        "env": {
+          "STELLAR_X402_BASE_URL": "http://127.0.0.1:8000"
+        },
+        "description": "Stellar x402 executor — discovery, prepare-payment, POST /execute, demo /api/pay"
+      }
+    }
+  }
+}

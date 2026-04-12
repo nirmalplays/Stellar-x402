@@ -7,8 +7,9 @@
     <!-- Version Marker: 1.0.2 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/site-nav.css">
     <style>
-        body { background-color: #05070a; color: #e2e8f0; font-family: 'Inter', sans-serif; }
+        body { color: #e2e8f0; font-family: 'Inter', sans-serif; }
         .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.5); }
         .terminal-compact { background-color: #020617; font-family: 'Fira Code', monospace; font-size: 0.75rem; border: 1px solid #1e293b; border-radius: 4px; height: 180px; overflow-y: auto; padding: 10px; }
         .tx-feed-item { border-left: 2px solid #3b82f6; transition: all 0.3s ease; }
@@ -17,13 +18,6 @@
         .nav-link { position: relative; transition: color 0.3s; cursor: pointer; }
         .nav-link.active::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
         
-        /* Vault Styles */
-        .node-advanced { background: #1e293b; border: 1px solid #334155; border-radius: 12px; width: 200px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; z-index: 10; }
-        .node-advanced.active { border-color: #3b82f6; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); transform: translateY(-5px); }
-        .node-advanced.completed { border-color: #10b981; }
-        .flow-path { height: 2px; background: #1e293b; flex-grow: 1; position: relative; margin: 0 -5px; z-index: 5; overflow: hidden; }
-        .flow-path-active::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, #3b82f6, transparent); animation: flow-move 1.5s infinite linear; }
-        @keyframes flow-move { to { left: 100%; } }
         .stat-box { background: rgba(30, 41, 59, 0.5); border: 1px solid #334155; padding: 1rem; border-radius: 12px; }
         .tx-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 0.75rem; border-left: 3px solid #3b82f6; }
         .indicator { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
@@ -34,17 +28,151 @@
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+
+        /* Agent interaction canvas */
+        .agent-card {
+            border-radius: 16px;
+            border: 1px solid #334155;
+            background: linear-gradient(165deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.85) 100%);
+            padding: 1.25rem 1.5rem;
+            transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+        }
+        .agent-card.dim { opacity: 0.55; }
+        .agent-card.lead {
+            border-color: rgba(59, 130, 246, 0.65);
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.15), 0 12px 40px rgba(59, 130, 246, 0.12);
+            transform: translateY(-2px);
+        }
+        .agent-card.lead-executor {
+            border-color: rgba(168, 85, 247, 0.65);
+            box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.15), 0 12px 40px rgba(168, 85, 247, 0.12);
+            transform: translateY(-2px);
+        }
+        .protocol-channel {
+            position: relative;
+            min-height: 120px;
+            border-radius: 12px;
+            border: 1px dashed rgba(51, 65, 85, 0.8);
+            background: rgba(2, 6, 23, 0.5);
+            overflow: hidden;
+        }
+        .protocol-channel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.06), transparent);
+            animation: channel-shimmer 3s ease-in-out infinite;
+        }
+        @keyframes channel-shimmer {
+            0%, 100% { opacity: 0.4; transform: translateX(-8%); }
+            50% { opacity: 1; transform: translateX(8%); }
+        }
+        .beam {
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            top: 50%;
+            height: 2px;
+            margin-top: -1px;
+            background: #1e293b;
+            border-radius: 999px;
+        }
+        .beam::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(90deg, transparent, #3b82f6, #a855f7, transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .beam.active::after { opacity: 1; animation: beam-flow 1.8s linear infinite; }
+        @keyframes beam-flow {
+            0% { filter: hue-rotate(0deg); transform: scaleX(0.92); }
+            50% { filter: hue-rotate(25deg); transform: scaleX(1); }
+            100% { filter: hue-rotate(0deg); transform: scaleX(0.92); }
+        }
+        .packet {
+            position: absolute;
+            top: 50%;
+            width: 10px;
+            height: 10px;
+            margin-top: -5px;
+            border-radius: 50%;
+            background: #3b82f6;
+            box-shadow: 0 0 12px #3b82f6;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .packet.out { animation: pkt-out 2.2s ease-in-out infinite; }
+        .packet.in { animation: pkt-in 2.2s ease-in-out infinite; background: #a855f7; box-shadow: 0 0 12px #a855f7; }
+        @keyframes pkt-out {
+            0% { left: 10%; opacity: 0; }
+            10% { opacity: 1; }
+            45% { left: 88%; opacity: 1; }
+            55% { opacity: 0; }
+            100% { left: 88%; opacity: 0; }
+        }
+        @keyframes pkt-in {
+            0% { left: 88%; opacity: 0; }
+            10% { opacity: 1; }
+            45% { left: 10%; opacity: 1; }
+            55% { opacity: 0; }
+            100% { left: 10%; opacity: 0; }
+        }
+        .phase-tile {
+            border-radius: 10px;
+            border: 1px solid #334155;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.65rem 0.75rem;
+            font-size: 10px;
+            transition: border-color 0.3s, background 0.3s;
+        }
+        .phase-tile.active { border-color: #3b82f6; background: rgba(30, 58, 138, 0.25); }
+        .phase-tile.done { border-color: #10b981; background: rgba(6, 78, 59, 0.2); }
+        .phase-tile.err { border-color: #f43f5e; background: rgba(127, 29, 29, 0.2); }
+        .vault-log-line {
+            font-size: 10px;
+            font-family: ui-monospace, monospace;
+            border-left: 2px solid #334155;
+            padding: 0.35rem 0 0.35rem 0.5rem;
+            margin-bottom: 0.25rem;
+            color: #94a3b8;
+        }
+        .vault-log-line strong { color: #e2e8f0; font-weight: 600; }
     </style>
 </head>
-<body class="min-h-screen">
-    <div class="flex h-screen overflow-hidden">
+<body class="site-shell min-h-screen flex flex-col overflow-hidden">
+    <header class="global-topnav sticky top-0 z-[100]" role="banner">
+        <div class="global-topnav-inner px-4 py-3 sm:px-6">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <a href="/home" class="global-brand" aria-label="StellarX-402 home">
+                    <span class="global-brand-mark"><i class="fas fa-bolt text-sm text-white"></i></span>
+                    <span class="global-brand-text">
+                        <span class="global-brand-title">StellarX-402</span>
+                        <span class="global-brand-tag">OpenClaw · Stellar · x402</span>
+                    </span>
+                    <span class="live-dot-nav shrink-0" title="Service"></span>
+                </a>
+                <nav class="global-nav-pills" aria-label="Site pages">
+                    <a href="/home" class="nav-pill nav-pill-ghost"><i class="fas fa-home text-[0.7rem] opacity-80"></i> Home</a>
+                    <a href="/" class="nav-pill nav-pill-active"><i class="fas fa-gauge-high text-[0.7rem] opacity-90"></i> Dashboard</a>
+                    <a href="/dev/docs" class="nav-pill nav-pill-ghost"><i class="fas fa-book text-[0.7rem] opacity-80"></i> Dev Docs</a>
+                    <a href="/docs" class="nav-pill nav-pill-ghost"><i class="fas fa-code text-[0.7rem] opacity-80"></i> API</a>
+                    <a href="https://github.com/nirmalplays/Stellar-x402" class="nav-pill nav-pill-ghost" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> GitHub</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-0 flex-1 overflow-hidden">
         <!-- Sidebar -->
         <aside class="w-64 glass border-r border-slate-800 flex flex-col p-6 space-y-8">
             <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900">
-                    <i class="fas fa-bolt text-white"></i>
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-violet-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/40 ring-1 ring-white/10">
+                    <i class="fas fa-layer-group text-white text-sm"></i>
                 </div>
-                <span class="text-xl font-bold tracking-tight">StellarX-402</span>
+                <span class="text-sm font-bold tracking-tight text-slate-200">Workspace</span>
             </div>
             
             <nav class="flex-1 space-y-2">
@@ -68,7 +196,7 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col overflow-hidden bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-900/10 via-slate-950 to-slate-950">
+        <main class="flex-1 flex flex-col overflow-hidden min-w-0 bg-[radial-gradient(ellipse_at_80%_0%,rgba(59,130,246,0.12),transparent_50%),radial-gradient(circle_at_top_right,rgba(109,40,217,0.08),transparent_45%),linear-gradient(180deg,#0a0f18,#05070a)]">
             <header class="p-6 border-b border-slate-800 flex justify-between items-center glass">
                 <h2 id="view-title" class="text-lg font-semibold">Executor Dashboard</h2>
                 <div id="wallets-header" class="flex space-x-6">
@@ -84,8 +212,9 @@
                         <h3 class="text-sm font-semibold uppercase text-slate-400 mb-4 tracking-wider">Configure Job</h3>
                         <div class="space-y-4">
                             <div class="group">
-                                <label class="text-xs text-slate-500 mb-1 block group-focus-within:text-blue-400 transition-colors">DOCKER_IMAGE</label>
-                                <input id="image" type="text" value="python:3.11-slim" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all">
+                                <label class="text-xs text-slate-500 mb-1 block group-focus-within:text-blue-400 transition-colors">DOCKER_IMAGE (auto = pick from command)</label>
+                                <input id="image" type="text" value="auto" placeholder="auto, or e.g. python:3.11-slim, node:20-slim" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all">
+                                <p class="text-[10px] text-slate-600 mt-1.5 leading-relaxed">With <span class="font-mono text-slate-400">auto</span>, the server picks an <strong>allowlisted</strong> image from <strong>TASK_DESCRIPTION</strong> first (e.g. “React / npm” → Node, “headless browser / screenshot” → Playwright, “apk add” → Alpine, “pandas / Django” → Python), then from <strong>COMMAND</strong>. Set <span class="font-mono">network_enabled</span> in the API for outbound HTTP / browser stacks.</p>
                             </div>
                             <div class="group">
                                 <label class="text-xs text-slate-500 mb-1 block group-focus-within:text-blue-400 transition-colors">COMMAND_ENTRYPOINT</label>
@@ -164,39 +293,91 @@
 
             <!-- Vault View -->
             <div id="view-vault" class="hidden flex-1 p-8 overflow-y-auto space-y-12">
-                <!-- Flow Visualization -->
                 <section class="space-y-6">
-                    <div class="flex justify-between items-end">
-                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Process Lifecycle</h3>
-                        <div id="current-step-label" class="text-xs text-blue-400 font-mono">STEP 0/4: READY</div>
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-2">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Agent-to-agent protocol</h3>
+                            <p class="text-xs text-slate-500 mt-1 max-w-xl">A <strong class="text-slate-400">caller agent</strong> (OpenClaw, A2A client, or script) negotiates x402 payment, proves EIP-8004 identity, streams work to this <strong class="text-slate-400">executor</strong>, then receives a signed job result over the same channel.</p>
+                        </div>
+                        <div id="current-step-label" class="text-xs text-blue-400 font-mono whitespace-nowrap">STEP 0/4 · IDLE</div>
                     </div>
-                    
-                    <div class="flex items-center justify-between py-12 px-4">
-                        <div id="node-1" class="node-advanced p-6 text-center">
-                            <i class="fas fa-wallet text-2xl text-blue-500 mb-3"></i>
-                            <div class="text-sm font-bold">Stellar Wallet</div>
-                            <div class="text-[10px] text-slate-500 mt-1">Authorization & Fees</div>
+
+                    <div class="glass rounded-2xl border border-slate-800/80 p-6 sm:p-8 space-y-8">
+                        <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(260px,320px)_minmax(0,1fr)] gap-8 items-center">
+                            <!-- Caller -->
+                            <div id="agent-client" class="agent-card">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0">
+                                        <i class="fas fa-paper-plane text-blue-400 text-lg"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Caller agent</div>
+                                        <div class="text-sm font-bold text-slate-100 mt-0.5">Client / orchestrator</div>
+                                        <p id="agent-client-caption" class="text-[11px] text-slate-500 mt-2 leading-relaxed">Holds budget, sends <span class="font-mono text-slate-400">POST /execute/stream</span>, attaches <span class="font-mono text-slate-400">X-Payment</span> / <span class="font-mono text-slate-400">X-Stellar-Payment-Tx</span>, consumes SSE lines + final JSON.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Channel -->
+                            <div class="flex flex-col gap-3 order-first lg:order-none">
+                                <div id="protocol-channel" class="protocol-channel">
+                                    <div id="protocol-beam" class="beam"></div>
+                                    <div id="packet-out" class="packet out"></div>
+                                    <div id="packet-in" class="packet in"></div>
+                                    <div class="relative z-10 flex flex-col items-center justify-center h-full py-4 px-3 text-center pointer-events-none">
+                                        <div class="text-[9px] uppercase tracking-[0.25em] text-slate-600 font-bold">Wire</div>
+                                        <div id="vault-wire-label" class="text-[11px] font-mono text-slate-400 mt-1 leading-snug">HTTPS + SSE · same socket</div>
+                                    </div>
+                                </div>
+                                <div id="vault-handshake" class="text-center text-[11px] text-slate-500 min-h-[2.5rem] px-1 leading-relaxed"></div>
+                                <div id="vault-last-tx" class="hidden text-[10px] font-mono text-center text-emerald-400/90 bg-emerald-950/30 border border-emerald-900/50 rounded-lg py-2 px-2"></div>
+                            </div>
+
+                            <!-- Executor -->
+                            <div id="agent-executor" class="agent-card">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-12 h-12 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center shrink-0">
+                                        <i class="fas fa-server text-purple-400 text-lg"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Executor agent</div>
+                                        <div class="text-sm font-bold text-slate-100 mt-0.5">OpenClaw Stellar executor</div>
+                                        <p id="agent-executor-caption" class="text-[11px] text-slate-500 mt-2 leading-relaxed">Verifies x402, checks Soroban registry, runs Docker, validates stdout, signs <span class="font-mono text-slate-400">JobResult</span>, optional reputation write.</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div id="path-1" class="flow-path"></div>
-                        
-                        <div id="node-2" class="node-advanced p-6 text-center">
-                            <i class="fas fa-id-card text-2xl text-green-500 mb-3"></i>
-                            <div class="text-sm font-bold">Agent Registry</div>
-                            <div class="text-[10px] text-slate-500 mt-1">Contract Verification</div>
+
+                        <div>
+                            <div class="text-[10px] uppercase tracking-widest text-slate-600 font-bold mb-2">Phases (who does what)</div>
+                            <div class="grid grid-cols-2 xl:grid-cols-4 gap-2">
+                                <div id="phase-1" class="phase-tile">
+                                    <div class="text-slate-400 font-bold mb-1"><span class="text-blue-400">1</span> · x402 settle</div>
+                                    <div class="text-slate-500 leading-snug"><span class="text-blue-300">Caller</span> pays · <span class="text-purple-300">Executor</span> verifies facilitator or Horizon</div>
+                                </div>
+                                <div id="phase-2" class="phase-tile">
+                                    <div class="text-slate-400 font-bold mb-1"><span class="text-blue-400">2</span> · 8004 registry</div>
+                                    <div class="text-slate-500 leading-snug"><span class="text-purple-300">Executor</span> reads Soroban for <span class="font-mono text-slate-400">agent_id</span></div>
+                                </div>
+                                <div id="phase-3" class="phase-tile">
+                                    <div class="text-slate-400 font-bold mb-1"><span class="text-blue-400">3</span> · OpenClaw run</div>
+                                    <div class="text-slate-500 leading-snug"><span class="text-purple-300">Executor</span> sandbox · SSE streams stdout to <span class="text-blue-300">caller</span></div>
+                                </div>
+                                <div id="phase-4" class="phase-tile">
+                                    <div class="text-slate-400 font-bold mb-1"><span class="text-blue-400">4</span> · Result + trust</div>
+                                    <div class="text-slate-500 leading-snug"><span class="text-purple-300">Executor</span> signs + returns JSON · reputation hook</div>
+                                </div>
+                            </div>
                         </div>
-                        <div id="path-2" class="flow-path"></div>
-                        
-                        <div id="node-3" class="node-advanced p-6 text-center">
-                            <i class="fas fa-microchip text-2xl text-purple-500 mb-3"></i>
-                            <div class="text-sm font-bold">Execution Engine</div>
-                            <div class="text-[10px] text-slate-500 mt-1">Sandboxed Docker Run</div>
-                        </div>
-                        <div id="path-3" class="flow-path"></div>
-                        
-                        <div id="node-4" class="node-advanced p-6 text-center">
-                            <i class="fas fa-shield-alt text-2xl text-amber-500 mb-3"></i>
-                            <div class="text-sm font-bold">Result Finality</div>
-                            <div class="text-[10px] text-slate-500 mt-1">Signed & Recorded</div>
+
+                        <div class="border-t border-slate-800/80 pt-5">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[10px] uppercase tracking-widest text-slate-600 font-bold">Live protocol trace</span>
+                                <button type="button" onclick="clearVaultProtocolLog()" class="text-[10px] text-slate-600 hover:text-slate-400">Clear</button>
+                            </div>
+                            <div id="vault-protocol-log" class="max-h-40 overflow-y-auto custom-scrollbar pr-1 text-left">
+                                <div class="vault-log-line text-slate-600 italic">No trace yet — start a job from Executor Console; each phase appends a directional line when the server advances.</div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -234,6 +415,108 @@
         // State Management
         let currentView = 'console';
         let isExecuting = false;
+        let lastVaultFlowKey = '';
+
+        const VAULT_FLOW_META = {
+            idle: {
+                step: 0,
+                label: 'STEP 0/4 · IDLE',
+                clientCap: 'Idle — launch a job from Executor Console to see the handshake.',
+                executorCap: 'Listening on /execute/stream · ready for x402 + agent_id.',
+                handshake: 'No active run. The channel lights up when a caller opens SSE after payment headers are valid.',
+                lead: 'none',
+                beam: false,
+                packets: false,
+            },
+            authorizing: {
+                step: 1,
+                label: 'STEP 1/4 · X402 AUTHORIZE',
+                clientCap: 'Sending payment proof (facilitator header or Stellar TX hash) so the executor can unlock the job.',
+                executorCap: 'Verifying settlement: facilitator verify/settle or Horizon polling for legacy XLM.',
+                handshake: '→ Caller: job JSON + payment headers · ← Executor: SSE log lines (“Verifying…”, “Authorization verified…”)',
+                lead: 'both',
+                beam: true,
+                packets: true,
+            },
+            registry: {
+                step: 2,
+                label: 'STEP 2/4 · REGISTRY (8004)',
+                clientCap: 'Already committed agent_id in the payload; identity is now checked on-chain, not re-sent.',
+                executorCap: 'Querying Soroban registry contract — fail-closed if agent missing or inactive.',
+                handshake: '← Executor: registry reads · → Caller: streamed status lines only (no extra round trip)',
+                lead: 'executor',
+                beam: true,
+                packets: false,
+            },
+            executing: {
+                step: 3,
+                label: 'STEP 3/4 · OPENCLAW EXECUTE',
+                clientCap: 'Receiving stdout/stderr as SSE data lines while Docker runs (single long-lived response).',
+                executorCap: 'Running allowlisted image, optional validation hooks, streaming container output.',
+                handshake: '← Executor: high-volume SSE chunks (container output) · Caller: passive consumer',
+                lead: 'executor',
+                beam: true,
+                packets: true,
+            },
+            finalizing: {
+                step: 4,
+                label: 'STEP 4/4 · VALIDATE & SIGN',
+                clientCap: 'Waiting for final JobResult JSON (signature, pubkey, verification fields).',
+                executorCap: 'Validating output, Ed25519-signing payload, optional reputation +/- on-chain.',
+                handshake: '← Executor: terminal JSON event on same SSE stream · Caller: persists verifiable record',
+                lead: 'executor',
+                beam: true,
+                packets: true,
+            },
+            completed: {
+                step: 4,
+                label: 'RUN · COMPLETED',
+                clientCap: 'Run finished successfully; caller can store signed_payload + signature for audit.',
+                executorCap: 'Returned verified result; reputation may have been incremented.',
+                handshake: 'Session complete — channel returns to idle after a short cooldown.',
+                lead: 'none',
+                beam: false,
+                packets: false,
+            },
+            failed: {
+                step: 0,
+                label: 'RUN · FAILED',
+                clientCap: 'Caller should inspect SSE error lines or non-2xx before retry.',
+                executorCap: 'Refused or aborted: payment, registry, docker, or validation failure.',
+                handshake: 'Run ended in error state.',
+                lead: 'none',
+                beam: false,
+                packets: false,
+            },
+            canceled: {
+                step: 0,
+                label: 'RUN · CANCELED',
+                clientCap: 'Job canceled from client side when supported.',
+                executorCap: 'Teardown without success path.',
+                handshake: 'Canceled.',
+                lead: 'none',
+                beam: false,
+                packets: false,
+            },
+        };
+
+        function clearVaultProtocolLog() {
+            const el = document.getElementById('vault-protocol-log');
+            if (el) el.innerHTML = '<div class="vault-log-line text-slate-600 italic">Trace cleared.</div>';
+        }
+
+        function appendVaultProtocolLine(direction, text) {
+            const log = document.getElementById('vault-protocol-log');
+            if (!log) return;
+            const strip = log.querySelector('.italic');
+            if (strip && (strip.textContent.includes('Trace cleared') || strip.textContent.includes('No trace yet'))) strip.remove();
+            const row = document.createElement('div');
+            row.className = 'vault-log-line';
+            const arrow = direction === 'in' ? '←' : direction === 'out' ? '→' : '·';
+            row.innerHTML = `<span class="text-slate-600">${new Date().toLocaleTimeString()}</span> ${arrow} ${text}`;
+            log.prepend(row);
+            while (log.children.length > 48) log.removeChild(log.lastChild);
+        }
 
         function switchView(view) {
             currentView = view;
@@ -244,7 +527,7 @@
             document.getElementById('nav-console').className = `nav-link ${view === 'console' ? 'active' : ''} flex items-center space-x-3 ${view === 'console' ? 'text-blue-400 p-2 rounded-md bg-blue-900/20' : 'text-slate-400 hover:text-white p-2 rounded-md hover:bg-slate-800/50'}`;
             document.getElementById('nav-vault').className = `nav-link ${view === 'vault' ? 'active' : ''} flex items-center space-x-3 ${view === 'vault' ? 'text-blue-400 p-2 rounded-md bg-blue-900/20' : 'text-slate-400 hover:text-white p-2 rounded-md hover:bg-slate-800/50'}`;
             
-            document.getElementById('view-title').textContent = view === 'console' ? 'Executor Dashboard' : 'Virtual Flow & Agent Registry';
+            document.getElementById('view-title').textContent = view === 'console' ? 'Executor Dashboard' : 'Agent protocol map & vault';
         }
 
         // Persistent Logs
@@ -319,7 +602,10 @@
             const marker = (document.getElementById('expected-substring').value || '').trim();
             const input = {};
             if (marker) input.expected_substring = marker;
-            return { task, input, agent_id: 'agent_402', image, cmd };
+            const im = (image || '').trim();
+            const payload = { task, input, agent_id: 'agent_402', cmd };
+            if (im) payload.image = im;
+            return payload;
         }
 
         function showResultPanel(data) {
@@ -396,35 +682,110 @@
         }
 
         function updateFlowUI(state) {
-            const step = state.step;
-            const status = state.status;
-            
+            const statusRaw = state.status || 'idle';
+            const status = String(statusRaw).toLowerCase();
+            const step = typeof state.step === 'number' ? state.step : 0;
+            const meta = VAULT_FLOW_META[status] || VAULT_FLOW_META.idle;
+
             const stateText = document.getElementById('system-state-text');
             const stepLabel = document.getElementById('current-step-label');
-            
+            const clientCard = document.getElementById('agent-client');
+            const execCard = document.getElementById('agent-executor');
+            const clientCap = document.getElementById('agent-client-caption');
+            const execCap = document.getElementById('agent-executor-caption');
+            const handshakeEl = document.getElementById('vault-handshake');
+            const beam = document.getElementById('protocol-beam');
+            const pktOut = document.getElementById('packet-out');
+            const pktIn = document.getElementById('packet-in');
+            const lastTxEl = document.getElementById('vault-last-tx');
+
             if (status === 'idle') {
                 stateText.innerHTML = '<span class="indicator indicator-idle"></span>Waiting for instructions...';
-                stepLabel.textContent = 'STEP 0/4: READY';
             } else {
-                stateText.innerHTML = `<span class="indicator indicator-active"></span>${status.toUpperCase()}...`;
-                stepLabel.textContent = `STEP ${step}/4: ${status.toUpperCase()}`;
+                stateText.innerHTML = `<span class="indicator indicator-active"></span>${statusRaw.toString().toUpperCase()}…`;
             }
+            stepLabel.textContent = meta.label;
 
-            for (let i = 1; i <= 4; i++) {
-                const node = document.getElementById(`node-${i}`);
-                const path = document.getElementById(`path-${i}`);
-                if (!node) continue;
-                
-                node.className = 'node-advanced p-6 text-center';
-                if (path) path.className = 'flow-path';
+            if (clientCap) clientCap.textContent = meta.clientCap;
+            if (execCap) execCap.textContent = meta.executorCap;
+            if (handshakeEl) handshakeEl.textContent = meta.handshake;
 
-                if (i < step) {
-                    node.classList.add('completed');
-                } else if (i === step) {
-                    node.classList.add('active');
-                    if (path) path.classList.add('flow-path-active');
+            const lead = meta.lead;
+            if (clientCard && execCard) {
+                clientCard.className = 'agent-card';
+                execCard.className = 'agent-card';
+                if (lead === 'both') {
+                    clientCard.classList.add('lead');
+                    execCard.classList.add('lead-executor');
+                } else if (lead === 'executor') {
+                    clientCard.classList.add('dim');
+                    execCard.classList.add('lead-executor');
+                } else if (lead === 'client') {
+                    execCard.classList.add('dim');
+                    clientCard.classList.add('lead');
                 }
             }
+
+            const beamOn = !!meta.beam;
+            if (beam) beam.classList.toggle('active', beamOn);
+            if (pktOut) pktOut.style.display = meta.packets ? 'block' : 'none';
+            if (pktIn) pktIn.style.display = meta.packets ? 'block' : 'none';
+
+            if (lastTxEl) {
+                const tx = state.last_tx;
+                if (tx && status !== 'idle') {
+                    lastTxEl.classList.remove('hidden');
+                    const parts = [tx.type, tx.amount, tx.id].filter(Boolean);
+                    lastTxEl.textContent = parts.join(' · ');
+                } else {
+                    lastTxEl.classList.add('hidden');
+                }
+            }
+
+            const transitionKey = `${status}:${step}`;
+            if (transitionKey !== lastVaultFlowKey) {
+                const prev = lastVaultFlowKey;
+                lastVaultFlowKey = transitionKey;
+                if (prev && status === 'authorizing') {
+                    appendVaultProtocolLine('out', '<strong>Caller → Executor</strong> POST <code class="text-slate-400">/execute/stream</code> with job body + payment header.');
+                }
+                if (status === 'authorizing' && step === 1) {
+                    appendVaultProtocolLine('in', '<strong>Executor → Caller</strong> SSE: payment verification (facilitator or Horizon).');
+                }
+                if (status === 'registry') {
+                    appendVaultProtocolLine('in', '<strong>Executor</strong> Soroban lookup for <code class="text-slate-400">agent_id</code> (EIP-8004 on Stellar).');
+                }
+                if (status === 'executing') {
+                    appendVaultProtocolLine('in', '<strong>Executor → Caller</strong> SSE stream: Docker stdout/stderr chunks.');
+                }
+                if (status === 'finalizing') {
+                    appendVaultProtocolLine('in', '<strong>Executor → Caller</strong> validate, sign, emit terminal <code class="text-slate-400">JobResult</code> JSON.');
+                }
+                if (status === 'completed') {
+                    appendVaultProtocolLine('·', '<strong>Run complete</strong> — caller holds signed result; executor cooldown to idle.');
+                }
+                if (status === 'failed' || status === 'canceled') {
+                    appendVaultProtocolLine('·', `<strong>${status === 'canceled' ? 'Canceled' : 'Failed'}</strong> — see console SSE for detail.`);
+                }
+            }
+
+            const paintPhases = (activeStep, mode) => {
+                for (let i = 1; i <= 4; i++) {
+                    const el = document.getElementById(`phase-${i}`);
+                    if (!el) continue;
+                    el.className = 'phase-tile';
+                    if (mode === 'success') el.classList.add('done');
+                    else if (mode === 'fail') el.classList.add('err');
+                    else if (activeStep > 0) {
+                        if (i < activeStep) el.classList.add('done');
+                        else if (i === activeStep) el.classList.add('active');
+                    }
+                }
+            };
+
+            if (status === 'completed') paintPhases(4, 'success');
+            else if (status === 'failed' || status === 'canceled') paintPhases(0, 'fail');
+            else paintPhases(step, 'run');
         }
 
         // Main Execution Logic
@@ -543,6 +904,7 @@
         // Initialization
         loadLogs();
         updateWallets();
+        backgroundSync();
         setInterval(backgroundSync, 2000);
     </script>
 </body>

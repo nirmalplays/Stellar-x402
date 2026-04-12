@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse, JSONResponse
 
 from api.models.job import JobRequest, JobResult, JobStatus
 from api.services.activity_log import push_event
+from api.services.docker_image_infer import resolve_job_image
 from api.services.docker_runner import docker_runner
 from api.services.registry_client import registry_client
 from api.services.signer import result_signer
@@ -406,22 +407,35 @@ async def execute_stream(
             # Step 3: Execution
             latest_job_state["status"] = "executing"
             latest_job_state["step"] = 3
+
+            effective_image = resolve_job_image(
+                cmd=request.cmd,
+                task=request.task,
+                network_enabled=request.network_enabled or False,
+                explicit_image=request.image,
+            )
+            run_request = request.model_copy(update={"image": effective_image})
+            explicit_raw = (request.image or "").strip().lower()
+            if not explicit_raw or explicit_raw in ("auto", "automatic", "infer", "default"):
+                yield f"data: {json.dumps({'line': f'> Auto-selected Docker image: {effective_image}'})}\n\n"
+
             push_event(
                 kind="docker",
                 severity="info",
                 title="Docker execution",
-                detail=f"Image `{request.image[:40]}{'…' if len(request.image) > 40 else ''}`",
+                detail=f"Image `{effective_image[:40]}{'…' if len(effective_image) > 40 else ''}`",
             )
 
-            await _hooks.on_job_running(job_id, request)
+            await _hooks.on_job_running(job_id, run_request)
 
             async for line in docker_runner.run(
-                request.image,
-                request.cmd,
-                env=request.secrets,
-                network_enabled=request.network_enabled or False,
+                effective_image,
+                run_request.cmd,
+                env=run_request.secrets,
+                network_enabled=run_request.network_enabled or False,
                 job_id=job_id,
                 cancel_check=_djc.cancel_check_factory(job_id),
+                task=run_request.task,
             ):
                 output_acc.append(line)
                 pl = {"line": line}
@@ -439,7 +453,7 @@ async def execute_stream(
             yield f"data: {json.dumps({'line': '> Validating execution output...'})}\n\n"
 
             output_text = "\n".join(output_acc)
-            req_dump = request.model_dump()
+            req_dump = run_request.model_dump()
             if "secrets" in req_dump:
                 del req_dump["secrets"]
             validation = validate_execution_output(output_text, req_dump)
@@ -448,6 +462,7 @@ async def execute_stream(
                 "agent_id": request.agent_id,
                 "executor_agent": "openclaw",
                 "task": request.task,
+                "image": effective_image,
                 "output": output_text,
                 "verified": validation.verified,
                 "validation_strategy": validation.strategy.value,

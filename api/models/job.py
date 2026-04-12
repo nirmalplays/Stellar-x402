@@ -20,7 +20,8 @@ class JobRequest(BaseModel):
     task: str
     input: Dict[str, Any]
     agent_id: str
-    image: Optional[str] = "python:3.11-slim"
+    # None, "", or "auto" → server picks an allowlisted image from cmd/task (see docker_image_infer).
+    image: Optional[str] = None
     cmd: str
     secrets: Optional[Dict[str, str]] = None
     network_enabled: Optional[bool] = False

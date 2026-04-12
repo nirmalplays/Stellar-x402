@@ -8,6 +8,8 @@ from typing import AsyncGenerator, Callable
 import docker
 from docker.errors import APIError, ImageNotFound
 
+from api.services.docker_image_infer import resolve_job_image
+
 _LOG_END = object()
 _LOG_NO_CHUNK = object()
 
@@ -28,9 +30,6 @@ _DEFAULT_ALLOWED_IMAGES = {
     "node:20",
     "alpine:latest",
     "alpine:3.19",
-    "ubuntu:22.04",
-    "ubuntu:24.04",
-    "busybox:latest",
     "mcr.microsoft.com/playwright/python:v1.45.0-jammy",
 }
 
@@ -88,8 +87,15 @@ class OpenClawRunner:
         network_enabled: bool = False,
         job_id: str | None = None,
         cancel_check: Callable[[], bool] | None = None,
+        task: str = "",
     ) -> AsyncGenerator[str, None]:
-        # Check image allowlist before doing anything else
+        # Resolve ``auto`` / empty / infer keywords before allowlist (defense in depth for all callers).
+        image = resolve_job_image(
+            cmd=cmd,
+            task=task or "",
+            network_enabled=network_enabled,
+            explicit_image=(image or "").strip() or None,
+        )
         if not _image_allowed(image):
             allowed = sorted(_get_allowed_images())
             yield f"[ERROR] Image '{image}' is not in the allowlist. Allowed images: {', '.join(allowed)}"

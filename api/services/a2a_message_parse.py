@@ -60,7 +60,13 @@ def job_request_from_a2a_send(body: dict[str, Any]) -> JobRequest:
     if not isinstance(agent_id, str):
         agent_id = str(agent_id)
 
-    image = ex.get("image") or meta.get("image") or "python:3.11-slim"
+    image = ex.get("image")
+    if image is None:
+        image = meta.get("image")
+    if isinstance(image, str) and not image.strip():
+        image = None
+    elif image is not None and not isinstance(image, str):
+        image = str(image)
     cmd = ex.get("cmd") or meta.get("cmd") or ""
     if not isinstance(cmd, str):
         cmd = str(cmd)
@@ -80,6 +86,6 @@ def job_request_from_a2a_send(body: dict[str, Any]) -> JobRequest:
         task=task,
         input=input_obj,
         agent_id=agent_id,
-        image=str(image),
+        image=image,
         cmd=cmd,
     )
